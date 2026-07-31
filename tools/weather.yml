@@ -1,6 +1,6 @@
 # This tool is used to get the weather for a given location
 name: weather
-description: Get the weather for a given pair of latitude and longitude
+description: Get the current weather for a given pair of latitude and longitude
 parameters:
   latitude:
     type: number

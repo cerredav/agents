@@ -9,7 +9,9 @@ intent_prompt: |
   </think>
   <think>
     The user tasking me to do this. What do I need to do to accomplish this task?
-  </think
+  </think>
+
+  The user's input is: {user_input}
 
   After you have thought about the user's intent, you must output the following JSON object:
-  {"intent": "the intent of the user's request"}
+  {{"intent": "the intent of the user's request"}}

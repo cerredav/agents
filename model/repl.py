@@ -21,6 +21,8 @@ ModelResponder = Callable[[Sequence[Message]], Iterator[str]]
 SYSTEM_PROMPT_PATH = Path(__file__).parents[1] / "prompts" / "system.yml"
 INTENT_PROMPT_PATH = Path(__file__).parents[1] / "prompts" / "intent.yml"
 REASONING_PROMPT_PATH = Path(__file__).parents[1] / "prompts" / "reasoning.yml"
+LOOP_PROMPT_PATH = Path(__file__).parents[1] / "prompts" / "loop.yml"
+PLANNER_PROMPT_PATH = Path(__file__).parents[1] / "prompts" / "planner.yml"
 
 def get_model_response(messages: Sequence[Message]) -> Iterator[str]:
     """Stream the model's response for the current conversation."""
@@ -51,12 +53,28 @@ class AgentShell:
         }
 
     @staticmethod
+    def _planner_message() -> Message:
+        planner_prompt = read_yml(str(PLANNER_PROMPT_PATH))["planner_prompt"]
+        return {
+            "role": "system",
+            "content": planner_prompt,
+        }
+
+    @staticmethod
     def _reasoning_message(user_intent: str) -> Message:
         reasoning_prompt = read_yml(str(REASONING_PROMPT_PATH))["reasoning_prompt"]
         system_tools = format_tools_for_prompt()
         return {
             "role": "system",
             "content": reasoning_prompt.format(user_intent=user_intent, system_tools=system_tools),
+        }
+    
+    @staticmethod
+    def _loop_message(content: str) -> Message:
+        loop_prompt = read_yml(str(LOOP_PROMPT_PATH))["loop_prompt"]
+        return {
+            "role": "system",
+            "content": loop_prompt.format(content=content),
         }
 
     def run(self) -> None:
@@ -77,13 +95,13 @@ class AgentShell:
                 if not self._handle_command(user_input):
                     return
                 continue
-        
+
             def think(user_input: str) -> tuple[str, str, str, str, str]:
                 # get the user's intent
                 intent_chunks = []
                 reasoning_chunks = []
                 intent_message = [
-                    self._intent_message(),
+                    self._planner_message(),
                     {"role": "user", "content": user_input}
                 ]
                 intent_response = ""
@@ -106,11 +124,14 @@ class AgentShell:
                     # parse the reasoning response
                     reasoning_response = json.loads(reasoning_response)
                 except Exception as error:
-                    print(f"\n[ERROR] Error parsing reasoning response: {error}")
+                    print("\n[ERROR] Error parsing reasoning response")
+                    print(f"[ERROR] Error: {error}", end="", flush=True)
+                    print(f"\n[ERROR] Reasoning response: {reasoning_response}", end="", flush=True)
                     reasoning_response = {}
                     return intent_response, reasoning_response, None, None, None
 
                 # use the tool
+                print(f'\n[INFO] Reasoning response: {reasoning_response}')
                 tool_name = reasoning_response.get("tool", None)
                 tool_parameters = reasoning_response.get("parameters", None)
 
@@ -120,29 +141,52 @@ class AgentShell:
                     print(f"\n[INFO] No tool to use")
                     return intent_response, reasoning_response, None, None, None
                 else:
-                    print(f"\n[INFO] Tool name: {tool_name}")
-                    print(f"\n[INFO] Tool parameters: {tool_parameters}")
+                    print(f"\n[INFO] Tool name: {tool_name}", end="", flush=True)
+                    print(f"\n[INFO] Tool parameters: {tool_parameters}", end="", flush=True)
                     try:
                         result = run_tool(tool_name, tool_parameters)
                     except Exception as error:
                         print(f"\n[ERROR] Error running tool: {error}")
-                    print(f"\n[INFO] Result: {result}")
+                    print(f"\n[INFO] Result: {result}", end="", flush=True)
                 return intent_response, reasoning_response, tool_name, tool_parameters, result
 
 
-            intent_response, reasoning_response, tool_name, tool_parameters, result = think(user_input)
-            # create user message with the tool result
-            content = f"""
-            User Input: {user_input}
-            Deicphered Intent: {intent_response}
-            Available Tools: {reasoning_response}
-            Used Tool: {tool_name}
-            Tool Parameters: {tool_parameters}
-            Tool Result: {result}
-            """
+            has_completed = False
+            contents = []
+            while not has_completed:
+                intent_response, reasoning_response, tool_name, tool_parameters, result = think(user_input)
+                # create user message with the tool result
+                content = f"""
+                User Input: {user_input}
+                Deicphered Intent: {intent_response}
+                Available Tools: {reasoning_response}
+                Used Tool: {tool_name}
+                Tool Parameters: {tool_parameters}
+                Tool Result: {result}
+                """
+                contents.append(content)
+                loop_message = [
+                    self._loop_message(content),
+                ]
+
+                loop_response = ""
+                loop_chunks = []
+                print()
+                for chunk in self.responder(tuple(loop_message)):
+                    loop_chunks.append(chunk)
+                    print(chunk, end="", flush=True)
+
+                # parse the loop response
+                loop_response = "".join(loop_chunks)
+                loop_response = loop_response.split('<boolean>')[1].split('</boolean>')[0].strip()
+                print(f'\n[INFO] Loop response: {loop_response}')
+                has_completed = loop_response == "True" or loop_response == "true"
+                print(f'\n[INFO] Has completed: {has_completed}')
+
+
             user_message = {
                 "role": "user",
-                "content": content,
+                "content": "\n\n".join(contents),
             }
             self.messages.append(user_message)
 
