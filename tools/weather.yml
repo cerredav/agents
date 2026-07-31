@@ -1,0 +1,25 @@
+# This tool is used to get the weather for a given location
+name: weather
+description: Get the weather for a given pair of latitude and longitude
+parameters:
+  latitude:
+    type: number
+    description: The latitude of the location to get the weather for
+    required: true
+  longitude:
+    type: number
+    description: The longitude of the location to get the weather for
+    required: true
+callable: 
+  file: actions/weather.py
+  function: get_weather
+  description: Get the weather for a given location
+  parameters:
+    latitude:
+      type: number
+      description: The latitude of the location to get the weather for
+      required: true
+    longitude:
+      type: number
+      description: The longitude of the location to get the weather for
+      required: true

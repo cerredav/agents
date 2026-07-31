@@ -1,0 +1,17 @@
+# This tool is used to get the latitude and longitude for a given location name
+name: geocode
+description: Get the latitude and longitude for a given location name
+parameters:
+  location:
+    type: string
+    description: The location name to get the latitude and longitude for
+    required: true
+callable: 
+  file: actions/geocode.py
+  function: get_geocode
+  description: Get the latitude and longitude for a given location name
+  parameters:
+    location:
+      type: string
+      description: The location name to get the latitude and longitude for
+      required: true
