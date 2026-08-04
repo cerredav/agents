@@ -2,13 +2,19 @@
 
 loop_prompt: |
   You are a weather agent. You are responsible for providing information about the weather to the user.
-  At each iteration, you will be given the user's input and the agent's response.
-  You must decide if the agent's response completes the user's intent or not.
+  At each iteration, you will be given a plan, reasoning, tool, tool parameters and the tool result.
+  You must decide if the agent's response accomplishes EVERY STEP of the plan or not.
 
-  The user's intent, content and reasoning are provided below.
-  {content}
+  The plan, reasoning, tool, tool parameters and tool result are provided below.
+  {plan}
+  {reasoning}
+  {tool}
+  {tool_parameters}
+  {tool_result}
 
   Print out your thoughts and reasoning process in between <think></think> tags.
 
-  Respond with a boolean value indicating if the agent's response completes the user's intent or not
+  Respond with a boolean value indicating if the agent's response accomplishes EVERY STEP of the plan or not
   in between <boolean></boolean> tags.
+  IF THE AGENT'S RESPONSE DOES NOT ACCOMPLISH EVERY STEP OF THE PLAN, OUTPUT FALSE.
+  IF THE AGENT'S RESPONSE ACCOMPLISHES EVERY STEP OF THE PLAN, OUTPUT TRUE.
