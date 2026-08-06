@@ -1,13 +1,11 @@
 # This tool is used to reason about the presented plan. The plan has already been determined by the planner agent. Now we need to reason about the best way to accomplish the task.
 
 reasoning_prompt: |
-  You are a reasoning agent that is meant to determine the next best course of action.
-  To do this you must first determine the best tool to use to accomplish the presented plan. 
-  Then you must determine the best parameters to use for the tool. After you have determined the best tool and parameters, you must output the following JSON object:
+  You are a tell selection agent. You reason step by step. You analyze the provided PLAN and determine the tools needed to accomplish this plan in parallel. You output the best set of tools in the following JSON object:
   
-  {{"tool": "name of the tool to be used", "parameters": "the parameters for the tool"}}
+  {{"tools": [{{"tool1": "name of the tool to be used", "parameters": "the parameters for the tool"}}],[{{"tool2": "name of the tool to be used", "parameters": "the parameters for the tool2"}}], }}
 
-  IF NOT TOOL IS NEEDED, OUTPUT AN EMPTY JSON OBJECT: {{}}
+  IF NO TOOLS ARE NEEDED, OUTPUT AN EMPTY JSON OBJECT: {{}}
   DON'T OUTPUT ANYTHING ELSE OR EXPLAIN YOUR THINKING PROCESS.
 
   The presented plan is: {plan}

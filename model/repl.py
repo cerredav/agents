@@ -212,7 +212,7 @@ class AgentShell:
                     print(f"[ERROR] Error: {error}", end="", flush=True)
                     print(f"\n[ERROR] Reasoning response: {reasoning_response}", end="", flush=True)
                     reasoning_response = {}
-                    return reasoning_response, None, None, None
+                    return reasoning_response, None, None
 
                 print('\n----------------------------------------------------------------')
                 print('Using the tool...')
@@ -220,33 +220,35 @@ class AgentShell:
 
                 # use the tool
                 print(f'\n[INFO] Reasoning response: {reasoning_response}')
-                tool_name = reasoning_response.get("tool", None)
-                tool_parameters = reasoning_response.get("parameters", None)
+                tools = reasoning_response.get("tools", None)
+                results = []
+                for tool in tools:
+                    tool_name = next(iter(tool))
+                    tool_parameters = tool.get(tool_name, None)
 
-                # if tool is empty
-                result = None
-                if tool_name is None and tool_parameters is None:
-                    print(f"\n[INFO] No tool to use")
-                    return reasoning_response, None, None, None
-                else:
-                    print(f"\n[INFO] Tool name: {tool_name}\n")
-                    print(f"\n[INFO] Tool parameters: {tool_parameters}\n")
-                    print()
-                    try:
-                        result = run_tool(tool_name, tool_parameters)
-                    except Exception as error:
-                        print(f"\n[ERROR] Error running tool: {error}")
-                    print(f"\n[INFO] Result: {result}", end="", flush=True)
+                    # if tool is empty
+                    if tool_name is None and tool_parameters is None:
+                        print(f"\n[INFO] No tool to use")
+                    else:
+                        print(f"\n[INFO] Tool name: {tool_name}\n")
+                        print(f"\n[INFO] Tool parameters: {tool_parameters}\n")
+                        print()
+                        try:
+                            result = run_tool(tool_name, tool_parameters)
+                            results.append(result)
+                        except Exception as error:
+                            print(f"\n[ERROR] Error running tool: {error}")
+                        print(f"\n[INFO] Result: {result}", end="", flush=True)
 
-                # add the reasoning response to the messages
-                log = f"""[TOOL_USED] {tool_name}\n[TOOL_PARAMETERS] {tool_parameters}\n[RESULT] {result}"""
-                write_to_log(log, end_block=True)
+                    # add the reasoning response to the messages
+                    log = f"""[TOOL_USED] {tool_name}\n[TOOL_PARAMETERS] {tool_parameters}\n[RESULT] {results}"""
+                    write_to_log(log, end_block=True)
 
                 print('\n----------------------------------------------------------------')
                 print('Completed the task!')
                 print('----------------------------------------------------------------')
 
-                return reasoning_response, tool_name, tool_parameters, result
+                return reasoning_response, tools, results
 
 
             has_completed = False
@@ -254,7 +256,7 @@ class AgentShell:
 
             while not has_completed:
                 # think and act
-                reasoning_response, tool_name, tool_parameters, result = think(intent_response, context=context)
+                reasoning_response, tools, result = think(intent_response, context=context)
                 context += f"[TOOL_RESULT] {result}\n"
                 observe_message = self._observe_message(context=context, user_request=user_input)
 
