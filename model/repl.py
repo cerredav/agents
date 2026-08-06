@@ -13,6 +13,8 @@ from utils.parse_tools import format_tools_for_prompt
 from utils.run_tool import run_tool
 from utils.tokenizer import count_tokens
 
+from .react import submit_to_loop 
+
 import os
 import json
 
@@ -53,7 +55,7 @@ def get_model_response(messages: Sequence[Message]) -> Iterator[str]:
 
 @dataclass
 class AgentShell:
-    responder: ModelResponder
+    responder: ModelResponder = lambda message: get_model_response(message)
     token_count: TokenCount = field(default_factory=lambda: {
         "input": 0,
         "output": 0,
@@ -121,6 +123,7 @@ class AgentShell:
             "output": 0,
             "reasoning": 0
         }
+        context = ''
 
         # initialize the system prompt
         write_to_transcript(json.dumps(self.messages[-1], indent=4) + "\n")
@@ -152,149 +155,14 @@ class AgentShell:
             self.messages.append(user_message)
             write_to_transcript(json.dumps(self.messages[-1], indent=4) + "\n")
 
-            # get the user's intent
-            intent_message = self._intent_message()
-            intent_message_array = [
-                self._intent_message(),
-                user_message
-            ]
-            log = f"""[USER_INPUT] {user_input}\n[TODLER_INSTRUCTION] {intent_message["content"]}\n"""
-            write_to_log(log)
-            chunks = []
-            for chunk in self.responder(tuple(intent_message_array)):
-                chunks.append(chunk)
-                print(chunk, end="", flush=True)
+            def onProgress(token_count: dict):
+                current_token_count['reasoning'] += token_count['reasoning']
 
-            intent_response = "".join(chunks)
-            log = f"""[RESPONSE]{intent_response}"""
-            write_to_log(log, end_block=True)
-            intent_response_tokens = count_tokens(intent_response)
-            current_token_count["reasoning"] += intent_response_tokens
+            # submit to react
+            context = submit_to_loop(user_input, onProgress=onProgress)
 
-            def think(users_intent: str, context: str) -> tuple[str, str, str, str]:
-                print('\n----------------------------------------------------------------')
-                print('Planning the next best course of action...')
-                print('----------------------------------------------------------------\n')
-                # plan the next best course of action
-                planner_message = self._planner_message(user_intent=users_intent, context=context)
-                log = f"""[TODLER_INSTRUCTION] {planner_message["content"]}\n"""
-                write_to_log(log)
-                chunks = []
-                for chunk in self.responder(tuple([planner_message])):
-                    chunks.append(chunk)
-                    print(chunk, end="", flush=True)
-                planner_response = "".join(chunks)
-                log = f"""[RESPONSE] {planner_response}"""
-                write_to_log(log, end_block=True)
-                current_token_count["reasoning"] += count_tokens(planner_response)
-                print('\n----------------------------------------------------------------')
-                print('Reasoning about the next best course of action...')
-                print('----------------------------------------------------------------\n')
-
-                # get the best tool to use
-                reasoning_message = self._reasoning_message(plan=planner_response, context=context)
-                log = f"""[TODLER_INSTRUCTION] {reasoning_message["content"]}\n"""
-                write_to_log(log)
-                chunks = []
-                for chunk in self.responder(tuple([reasoning_message])):
-                    chunks.append(chunk)
-
-                reasoning_response = "".join(chunks)
-                log = f"""[RESPONSE] {reasoning_response}"""
-                write_to_log(log, end_block=True)
-                current_token_count["reasoning"] += count_tokens(reasoning_response)
-
-                try:
-                    # parse the reasoning response
-                    reasoning_response = json.loads(reasoning_response)
-                except Exception as error:
-                    print("\n[ERROR] Error parsing reasoning response")
-                    print(f"[ERROR] Error: {error}", end="", flush=True)
-                    print(f"\n[ERROR] Reasoning response: {reasoning_response}", end="", flush=True)
-                    reasoning_response = {}
-                    return reasoning_response, None, None
-
-                print('\n----------------------------------------------------------------')
-                print('Using the tool...')
-                print('----------------------------------------------------------------\n')
-
-                # use the tool
-                print(f'\n[INFO] Reasoning response: {reasoning_response}')
-                tools = reasoning_response.get("tools", None)
-                results = []
-                for tool in tools:
-                    tool_name = next(iter(tool))
-                    tool_parameters = tool.get(tool_name, None)
-
-                    # if tool is empty
-                    if tool_name is None and tool_parameters is None:
-                        print(f"\n[INFO] No tool to use")
-                    else:
-                        print(f"\n[INFO] Tool name: {tool_name}\n")
-                        print(f"\n[INFO] Tool parameters: {tool_parameters}\n")
-                        print()
-                        try:
-                            result = run_tool(tool_name, tool_parameters)
-                            results.append(result)
-                        except Exception as error:
-                            print(f"\n[ERROR] Error running tool: {error}")
-                        print(f"\n[INFO] Result: {result}", end="", flush=True)
-
-                    # add the reasoning response to the messages
-                    log = f"""[TOOL_USED] {tool_name}\n[TOOL_PARAMETERS] {tool_parameters}\n[RESULT] {results}"""
-                    write_to_log(log, end_block=True)
-
-                print('\n----------------------------------------------------------------')
-                print('Completed the task!')
-                print('----------------------------------------------------------------')
-
-                return reasoning_response, tools, results
-
-
-            has_completed = False
-            context = ''
-
-            while not has_completed:
-                # think and act
-                reasoning_response, tools, result = think(intent_response, context=context)
-                context += f"[TOOL_RESULT] {result}\n"
-                observe_message = self._observe_message(context=context, user_request=user_input)
-
-                print('----------------------------------------------------------------')
-                print('Observing the tool result...')
-                print('----------------------------------------------------------------\n')
-
-                loop_response = ""
-                loop_chunks = []
-                print()
-                log = f"""[TODLER_INSTRUCTION] {observe_message["content"]}\n"""
-                write_to_log(log)
-                # observe
-                for chunk in self.responder(tuple([observe_message])):
-                    loop_chunks.append(chunk)
-                    print(chunk, end="", flush=True)
-
-                log = f"""[RESPONSE] {loop_response}"""
-                write_to_log(log, end_block=True)
-
-                # parse the loop response
-                loop_response = "".join(loop_chunks)
-                loop_response_tokens = count_tokens(loop_response)
-                current_token_count["reasoning"] += loop_response_tokens
-                try:
-                    loop_response = loop_response.strip()
-                    print(f'\n[INFO] Loop response: {loop_response}')
-                    has_completed = loop_response.strip().lower() == "true"
-                    print(f'[INFO] Has completed: {has_completed}')
-                except Exception as error:
-                    print(f'\n[ERROR] Error parsing loop response: {error}')
-                    print(f'\n[ERROR] Loop response: {loop_response}')
-                    loop_response = False
-                    has_completed = False
-
-
-            # Asking the todler to react to the user's input based on the tool result
-            log = f"""[TODLER_INSTRUCTION] {self._react_message(user_input=user_input, context=context)["content"]}\n"""
+            # Asking the model to react to the user's input based on the tool result
+            log = f"""[MODEL_INSTRUCTION] {self._react_message(user_input=user_input, context=context)["content"]}\n"""
             write_to_log(log)
             chunks = []
             for chunk in self.responder(tuple([

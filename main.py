@@ -6,11 +6,11 @@ can be added later without changing the shell itself.
 
 from __future__ import annotations
 
-from model.repl import AgentShell, ModelResponder, get_model_response
+from model.repl import AgentShell
 
-def run_shell(responder: ModelResponder = get_model_response) -> None:
+def run_shell() -> None:
     """Start an interactive weather-agent session."""
-    AgentShell(responder=responder).run()
+    AgentShell().run()
 
 
 if __name__ == "__main__":

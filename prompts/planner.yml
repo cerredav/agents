@@ -20,3 +20,7 @@ planner_prompt: |
     <step>step 2</step>
     <step>step 3</step>
   </steps>
+
+  If the user's intent has been completed then DON'T output steps to take. Instead output 
+
+  "No further steps to take. Task has been completed according to provided data."

@@ -1,0 +1,24 @@
+[MODEL_INSTRUCTION] You are a helpful assistant that is responsible for responding to the user's input based on the tools used, if any. The user's input is: what's the weather like in Puerto Rico. The result of the tools used, if any, is: [TOOL_RESULT] [{'latitude': 18.242529, 'longitude': -66.55609, 'generationtime_ms': 4.209041595458984, 'utc_offset_seconds': 0, 'timezone': 'GMT', 'timezone_abbreviation': 'GMT', 'elevation': 475.0, 'current_units': {'time': 'unixtime', 'interval': 'seconds', 'temperature_2m': '°C', 'relative_humidity_2m': '%', 'dew_point_2m': '°C', 'precipitation_probability': '%', 'rain': 'mm', 'pressure_msl': 'hPa', 'cloud_cover': '%', 'visibility': 'm', 'wind_speed_10m': 'km/h', 'temperature_80m': '°C', 'soil_temperature_0cm': '°C'}, 'current': {'time': 1786019400, 'interval': 900, 'temperature_2m': 25.3, 'relative_humidity_2m': 80, 'dew_point_2m': 21.7, 'precipitation_probability': 1, 'rain': 0.0, 'pressure_msl': 1018.4, 'cloud_cover': 28, 'visibility': 42060.0, 'wind_speed_10m': 8.7, 'temperature_80m': 23.9, 'soil_temperature_0cm': 25.7}}]
+[TOOL_RESULT] []
+[TOOL_RESULT] []
+
+Use both to answer the user's input.
+[RESPONSE] The current weather in Puerto Rico is as follows:
+
+- Temperature: 25.3°C
+- Humidity: 80%
+- Dew Point: 21.7°C
+- Precipitation Probability: 1% (This means it’s currently raining, but with very low intensity since the rain amount is 0mm)
+- Pressure: 1018.4 hPa
+- Cloud Cover: 28%
+- Visibility: 42.1 km
+- Wind Speed: 8.7 km/h
+
+These conditions are typical for a warm and humid tropical climate, with clear skies and mild winds.
+--------------------------------------------------------------------------------
+[MODEL_INSTRUCTION] You are a helpful assistant that is responsible for responding to the user's input based on the tools used, if any. The user's input is: tell me now about the weather in Tampa, FL. The result of the tools used, if any, is: [TOOL_RESULT] None
+[TOOL_RESULT] [{'latitude': 28.047106, 'longitude': -82.51833, 'generationtime_ms': 1.7076730728149414, 'utc_offset_seconds': 0, 'timezone': 'GMT', 'timezone_abbreviation': 'GMT', 'elevation': 13.0, 'current_units': {'time': 'unixtime', 'interval': 'seconds', 'temperature_2m': '°C', 'relative_humidity_2m': '%', 'dew_point_2m': '°C', 'precipitation_probability': '%', 'rain': 'mm', 'pressure_msl': 'hPa', 'cloud_cover': '%', 'visibility': 'm', 'wind_speed_10m': 'km/h', 'temperature_80m': '°C', 'soil_temperature_0cm': '°C'}, 'current': {'time': 1786019400, 'interval': 900, 'temperature_2m': 24.7, 'relative_humidity_2m': 86, 'dew_point_2m': 22.2, 'precipitation_probability': 1, 'rain': 0.0, 'pressure_msl': 1020.0, 'cloud_cover': 100, 'visibility': 15500.0, 'wind_speed_10m': 10.0, 'temperature_80m': 25.8, 'soil_temperature_0cm': 26.4}}]
+
+Use both to answer the user's input.
+[RESPONSE] Currently in Tampa, FL, it is 24.7°C with a relative humidity of 86% and a dew point of 22.2°C. The precipitation probability is at 1%, but there is no rain expected. The current cloud cover is 100%, visibility is around 15.5 km, wind speed is 10.0 km/h, and the atmospheric pressure stands at 1020 hPa.
+--------------------------------------------------------------------------------
