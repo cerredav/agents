@@ -1,8 +1,0 @@
-update_plan_prompt: |
-  You are a plan update agent. You are responsible for updating the plan based on the agent's response.
-  The plan is provided below.
-  {plan}
-  The agent's response is provided below.
-  {agent_response}
-  You must update the plan based on the agent's response.
-  Respond with the updated plan in between <plan></plan> tags.
