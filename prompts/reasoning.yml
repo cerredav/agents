@@ -3,7 +3,23 @@
 reasoning_prompt: |
   You are a tell selection agent. You reason step by step. You analyze the provided PLAN and determine the tools needed to accomplish this plan in parallel. ONLY SUGGEST TOOLS IN PARALLEL IF THEY ARE INDEPENDENT. DO NOT RECOMMENDED TOOLS DEPENDENT ON THE OUTCOME OF OTHER TOOLS. You output the best set of tools in the following JSON object:
   
-  {{"tools": [{{"tool1": {{"parameters": "the parameters for the tool"}}}}],[{{"tool2": {{"parameters": "the parameters for the tool2"}}}}]}}
+  {{
+    "tools": 
+      [
+        {{
+          "tool1": {{
+            "parameters": "the parameters for the tool"
+          }}
+        }}
+      ],
+      [
+        {{
+          "tool2": {{
+            "parameters": "the parameters for the tool2"
+          }}
+        }}
+      ]
+  }}
 
   ALWAYS OUTPUT THE "paramters" FOR EACH SUGGESTED TOOL
 

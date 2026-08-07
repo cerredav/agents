@@ -191,7 +191,9 @@ def think(users_intent: str, context: str, onProgress: Callable) -> tuple[str, s
     for tool in tools:
         tool_name = next(iter(tool))
         t = tool.get(tool_name, None)
+        print('t', t)
         tool_parameters = t.get('parameters', {})
+        print('paramters', tool_parameters)
 
         # if tool is empty
         if tool_name is None and tool_parameters is None:

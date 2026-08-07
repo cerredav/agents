@@ -1,0 +1,18 @@
+# This tool is used to search for a string across files in a given directory
+name: regrep
+description: Search for a string across multiple files
+parameters:
+  directory:
+    type: string
+    description: The directory to search in
+    required: true
+callable: 
+  file: actions/regrep.py
+  function: search
+  description: Search in a directory
+  parameters:
+    directory:
+      type: string
+      description: The directory to search in
+      required: true
+  
