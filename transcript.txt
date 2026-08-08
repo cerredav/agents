@@ -4,9 +4,5 @@
 }
 {
     "role": "user",
-    "content": "what files contain the text 'weather' in our current directory: '.'?"
-}
-{
-    "role": "assistant",
-    "content": "The files in your current directory that contain the text 'weather' are:\n\n- `tools/weather.yml`\n- `tools/actions/weather.py`\n\nThese are the only files listed that specifically mention 'weather'."
+    "content": "find the weather for tampa, new york city, and san juan puerto rico"
 }

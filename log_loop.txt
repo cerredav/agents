@@ -1,166 +1,39 @@
-[USER_INPUT] what files contain the text 'weather' in our current directory: '.'?
+[USER_INPUT] find the weather for tampa, new york city, and san juan puerto rico
 [MODEL_INSTRUCTION] You are a thinking agent that is meant to decipher what the user's request is. 
 After you have understood the user's intent, you must output the following JSON object:
 {"intent": "the intent of the user's request"}
 
 DO NOT INCLUDE ANY OTHER TEXT IN YOUR RESPONSE. ONLY THE JSON OBJECT.
 
-[RESPONSE]{"intent": "search for files containing the text 'weather' in the current directory"}
+[RESPONSE]{"intent": "weather forecast for multiple cities"}
 --------------------------------------------------------------------------------
-[MODEL_INSTRUCTION] Think step by step about the user's intent and output each thought between <think></think> tags. You are a planner agent that is mean to plan out the steps needed to accomplish the user's intented task. Tools will be provided in the future. 
-Don't worry about not having access to them yet, they will come. Focus on determining the next logical step needed to accomplish the task.
-For example:
-<think>
-  The user is asking about the weather in a given location. The user is tasking me to do this. What do I need to do to accomplish this task?
-</think>
+[MODEL_INSTRUCTION] You are a orchestrator between multiple agents. Every agent is meant to focus on a specific 
+task. Think step by step. Focus on determining the number of agents and their 
+intent.
 
-The user's intended task is: {"intent": "search for files containing the text 'weather' in the current directory"}.
-The result of the tools used, if any, is: 
+The user's intended task is: {"intent": "weather forecast for multiple cities"}.
+The user's input is: find the weather for tampa, new york city, and san juan puerto rico
 
-Use the result of the tools to think about what has already been accomplished and what is left to be done. Think step by step about the tools used and the inteded task.
-
-After you have thought about how to accomplish the user's intended task in 
-a series of logical steps, you must output the following JSON object:
-
-<steps>
-  <step>step 1</step>
-  <step>step 2</step>
-  <step>step 3</step>
-</steps>
-
-If the user's intent has been completed then DON'T output steps to take. Instead output 
-
-"No further steps to take. Task has been completed according to provided data."
-[RESPONSE] <think>
-The user wants to search for files in the current directory that contain the text 'weather'. To accomplish this task, I need to provide a series of logical steps.
-</think>
-
-<steps>
-  <step>Open terminal or command prompt.</step>
-  <step>Navigate to the current directory where you want to search for files containing the text 'weather'.</step>
-  <step>Type the following command in the terminal: `grep -lir 'weather' .` This will list all file names that contain the word 'weather' in the current directory and its subdirectories. If you only want to search within the current directory, use `grep -lir 'weather' *`.</step>
-</steps>
---------------------------------------------------------------------------------
-[MODEL_INSTRUCTION] You are a tell selection agent. You reason step by step. You analyze the provided PLAN and determine the tools needed to accomplish this plan in parallel. ONLY SUGGEST TOOLS IN PARALLEL IF THEY ARE INDEPENDENT. DO NOT RECOMMENDED TOOLS DEPENDENT ON THE OUTCOME OF OTHER TOOLS. You output the best set of tools in the following JSON object:
-
+After you have thought about what the user wants to do and how many 
+agents we need and to do what, you must output a JSON object that 
+defines the agents and the task to accomplish. Such as:
 {
-  "tools": 
-    [
-      {
-        "tool1": {
-          "parameters": "the parameters for the tool"
-        }
+  "agents": [
+    {
+      "agent1": {
+        "intent": "agent 1 intended task",
+        "data": "file to search"
       }
-    ],
-    [
+    },
       {
-        "tool2": {
-          "parameters": "the parameters for the tool2"
-        }
+      "agent2": {
+        "intent": "agent 2 intended task",
+        "data": "query to run"
       }
-    ]
+    },
+  ]
 }
 
-ALWAYS OUTPUT THE "paramters" FOR EACH SUGGESTED TOOL
-
-If the plan requires the tools we have to be called sequentially then ONLY output the first tool. The system will call that tool and then call the second later on. Don't suggest tools that are dependent on the output of the previous tools as these tools are to be ran in parallel, not sequentially.
-
-IF NO TOOLS ARE NEEDED, OUTPUT AN EMPTY JSON OBJECT: {}
-DON'T OUTPUT ANYTHING ELSE OR EXPLAIN YOUR THINKING PROCESS.
-
-The presented plan is: <think>
-The user wants to search for files in the current directory that contain the text 'weather'. To accomplish this task, I need to provide a series of logical steps.
-</think>
-
-<steps>
-  <step>Open terminal or command prompt.</step>
-  <step>Navigate to the current directory where you want to search for files containing the text 'weather'.</step>
-  <step>Type the following command in the terminal: `grep -lir 'weather' .` This will list all file names that contain the word 'weather' in the current directory and its subdirectories. If you only want to search within the current directory, use `grep -lir 'weather' *`.</step>
-</steps>
-
-The available system tools are:\n[
-  {
-    "name": "ask",
-    "description": "Ask the user a question to clarify their intent",
-    "parameters": {
-      "question": {
-        "type": "string",
-        "description": "The question to ask the user",
-        "required": true
-      }
-    }
-  },
-  {
-    "name": "geocode",
-    "description": "Get the latitude and longitude for a given location name",
-    "parameters": {
-      "location": {
-        "type": "string",
-        "description": "The location name to get the latitude and longitude for",
-        "required": true
-      }
-    }
-  },
-  {
-    "name": "regrep",
-    "description": "Search for a string across multiple files",
-    "parameters": {
-      "directory": {
-        "type": "string",
-        "description": "The directory to search in",
-        "required": true
-      }
-    }
-  },
-  {
-    "name": "weather",
-    "description": "Get the current weather for a given pair of latitude and longitude",
-    "parameters": {
-      "latitude": {
-        "type": "number",
-        "description": "The latitude of the location to get the weather for",
-        "required": true
-      },
-      "longitude": {
-        "type": "number",
-        "description": "The longitude of the location to get the weather for",
-        "required": true
-      }
-    }
-  }
-]
-
-Previously used tools and their results are: 
-[RESPONSE] {
-  "tools": 
-    [
-      {
-        "regrep": {
-          "parameters": {
-            "directory": "."
-          }
-        }
-      }
-    ]
-}
---------------------------------------------------------------------------------
-[TOOL_USED] regrep
-[TOOL_PARAMETERS] {'directory': '.'}
-[RESULT] [b'main.py\nlog_loop.txt\nrequirements.txt\ntranscript.txt\ntools/geocode.yml\nmodel/config.yml\ntools/ask.yml\nprompts/reasoning.yml\ntools/weather.yml\ntools/actions/regrep.py\nmodel/react.py\nmodel/connection.py\nprompts/intent.yml\nmodel/repl.py\nprompts/react.yml\nutils/read_yml.py\nprompts/observe.yml\ntools/regrep.yml\nprompts/system.yml\ntools/actions/weather.py\nutils/write_to_file.py\nutils/tokenizer.py\ntools/actions/ask.py\nprompts/loop.yml\ntools/actions/geocode.py\nutils/parse_tools.py\nprompts/planner.yml\nutils/run_tool.py\n']
---------------------------------------------------------------------------------
-[MODEL_INSTRUCTION] Think step by step here. Given the user's request and the tool's output, you must decide if it is sufficient to answer the user's request. Use the context provided below knowing the tool's output could be part of a much larger operation needed to answer the user's request.
-
-If the tool's output is sufficient to answer the user's request, you must output True. If the tool's output is not sufficient to answer the user's request, you must output False.
-
-The tool's output is provided below.
-The current transcript of the conversation is below.
-[TOOL_RESULT] [b'main.py\nlog_loop.txt\nrequirements.txt\ntranscript.txt\ntools/geocode.yml\nmodel/config.yml\ntools/ask.yml\nprompts/reasoning.yml\ntools/weather.yml\ntools/actions/regrep.py\nmodel/react.py\nmodel/connection.py\nprompts/intent.yml\nmodel/repl.py\nprompts/react.yml\nutils/read_yml.py\nprompts/observe.yml\ntools/regrep.yml\nprompts/system.yml\ntools/actions/weather.py\nutils/write_to_file.py\nutils/tokenizer.py\ntools/actions/ask.py\nprompts/loop.yml\ntools/actions/geocode.py\nutils/parse_tools.py\nprompts/planner.yml\nutils/run_tool.py\n']
-
-
-The user's request is provided below.
-what files contain the text 'weather' in our current directory: '.'?
-
-ONLY OUTPUT TRUE OR FALSE. DO NOT OUTPUT ANYTHING ELSE. DO NOT OUTPUT ANYTHING ELSE.
-
-[RESPONSE] 
---------------------------------------------------------------------------------
+ONLY OUTPUT THE JSON OBJECT. Communicate in each intent entry the 
+data required to execute the agent. DO NOT PRODUCE A VAGUE AGENT 
+INTENT. BE PRECISE. BE SPECIFIC. BE VERBOSE.

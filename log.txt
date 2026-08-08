@@ -1,10 +1,2 @@
-[MODEL_INSTRUCTION] You are a helpful assistant that is responsible for responding to the user's input based on the tools used, if any. The user's input is: what files contain the text 'weather' in our current directory: '.'?. The result of the tools used, if any, is: [TOOL_RESULT] [b'main.py\nlog_loop.txt\nrequirements.txt\ntranscript.txt\ntools/geocode.yml\nmodel/config.yml\ntools/ask.yml\nprompts/reasoning.yml\ntools/weather.yml\ntools/actions/regrep.py\nmodel/react.py\nmodel/connection.py\nprompts/intent.yml\nmodel/repl.py\nprompts/react.yml\nutils/read_yml.py\nprompts/observe.yml\ntools/regrep.yml\nprompts/system.yml\ntools/actions/weather.py\nutils/write_to_file.py\nutils/tokenizer.py\ntools/actions/ask.py\nprompts/loop.yml\ntools/actions/geocode.py\nutils/parse_tools.py\nprompts/planner.yml\nutils/run_tool.py\n']
-
+[MODEL_INSTRUCTION] You are a helpful assistant that is responsible for responding to the user's input based on the tools used, if any. The user's input is: find the weather for tampa, new york city, and san juan puerto rico. The result of the tools used, if any, is: None
 Use both to answer the user's input.
-[RESPONSE] The files in your current directory that contain the text 'weather' are:
-
-- `tools/weather.yml`
-- `tools/actions/weather.py`
-
-These are the only files listed that specifically mention 'weather'.
---------------------------------------------------------------------------------

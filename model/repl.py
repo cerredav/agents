@@ -13,6 +13,7 @@ from utils.write_to_file import write_to_file
 from utils.tokenizer import count_tokens
 
 from .react import submit_to_loop 
+from .graph import submit_to_graph
 
 import json
 
@@ -99,7 +100,7 @@ class AgentShell:
                 current_token_count['reasoning'] += token_count['reasoning']
 
             # submit to react
-            context = submit_to_loop(user_input, onProgress=onProgress)
+            context = submit_to_graph(user_input, onProgress=onProgress)
 
             # Asking the model to react to the user's input based on the tool result
             log = f"""[MODEL_INSTRUCTION] {self._react_message(user_input=user_input, context=context)["content"]}\n"""
