@@ -1,23 +1,40 @@
-[USER_INPUT] find the weather for tampa, new york city, and san juan puerto rico
-[MODEL_INSTRUCTION] You are a thinking agent that is meant to decipher what the user's request is. 
+[USER_INPUT] tell me about the weather in Tampa
+[MODEL_INSTRUCTION] You are a thinking agent that is meant to decipher what the user's request is. We must ensure what the user asks is within our capabilities list:
+
+        Capability: weather 
+
+        Tools: {'get_current_weather': {'description': 'Get the current weather for a given pair of latitude and longitude', 'parameters': {'latitude': {'type': 'int', 'description': 'The latitude of the location to get the weather for', 'required': True}, 'longitude': {'type': 'int', 'description': 'The longitude of the location to get the weather for', 'required': True}}}, 'named_location_to_lat_lon_pair': {'description': 'Get the latitude and longitude for a given location name', 'parameters': {'location': {'type': 'str', 'description': 'The location name to get the latitude and longitude for', 'required': True}}}}
+        
+
+
 After you have understood the user's intent, you must output the following JSON object:
 {"intent": "the intent of the user's request"}
 
+IF WE CANNOT COMPLETE THE USER'S INTENT GIVEN OUR CAPABILITIES OUTPUT AN EMPTY JSON: {}
+
 DO NOT INCLUDE ANY OTHER TEXT IN YOUR RESPONSE. ONLY THE JSON OBJECT.
 
-[RESPONSE]{"intent": "weather forecast for multiple cities"}
+[RESPONSE]{"intent": "get_current_weather"}
 --------------------------------------------------------------------------------
-[MODEL_INSTRUCTION] You are a orchestrator between multiple agents. Every agent is meant to focus on a specific 
-task. Think step by step. Focus on determining the number of agents and their 
-intent.
+[MODEL_INSTRUCTION] You are an orchestrator to determine the number of nodes in a graph. Nodes could be either
+agents or tools. Given the user's input and intent determine what is clear and executable 
+and what needs to be iterated on, i.e. an agent. 
 
-The user's intended task is: {"intent": "weather forecast for multiple cities"}.
-The user's input is: find the weather for tampa, new york city, and san juan puerto rico
+The user's intended task is: {"intent": "get_current_weather"}.
+The user's input is: tell me about the weather in Tampa
 
-After you have thought about what the user wants to do and how many 
-agents we need and to do what, you must output a JSON object that 
-defines the agents and the task to accomplish. Such as:
+After you have thought about what the user wants to do and how we could do it, output 
+the a JSON object that defines the deterministic tasks and agents needed. Such as:
+
 {
+  "paths": [
+    {
+      "path1": {
+        "intent": "task to execute",
+        "data": "location to search"
+      }
+    }
+  ],
   "agents": [
     {
       "agent1": {

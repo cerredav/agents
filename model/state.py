@@ -1,8 +1,19 @@
+from dataclasses import dataclass
+from typing import List, Callable
+
+@dataclass
+class Tool:
+    name: str
+    parameters: dict
+    validator: Callable
 
 # state of the graph
+@dataclass
 class State:
-    nodes: int
-    intent: str
+    user_input: str
+    intent: str = None
+    tools: List[Tool] = None
+    capabilies = None
 
     # use singleton pattern
     _instance = None
@@ -18,3 +29,7 @@ class State:
 
     def add_node(cls,):
         cls.nodes += 1
+
+    def define_capabilities(cls):
+        from capabilities import get_all
+        cls.capabilies = get_all()

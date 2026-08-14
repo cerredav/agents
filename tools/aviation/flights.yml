@@ -1,0 +1,18 @@
+# This tool is used to get the weather for a given location
+name: get_flights
+description: Get the current or historical flights
+parameters:
+  flight_date:
+    type: str
+    description: The latitude of the location to get the weather for
+    required: false
+callable: 
+  file: actions/aviation/flights.py
+  function: get_flights
+  description: Get the current or historical flights
+  parameters:
+    flight_date:
+      type: str
+      description: The latitude of the location to get the weather for
+      required: false
+  

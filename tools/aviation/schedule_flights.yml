@@ -1,0 +1,11 @@
+# This tool is used to get the weather for a given location
+name: get_scheduled_flights
+description: Scheduled and future flights
+parameters:
+callable: 
+  file: actions/aviation/scheduled_flights.py
+  function: get_scheduled_flights
+  description: Scheduled and future flights
+  parameters:
+
+  

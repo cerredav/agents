@@ -1,0 +1,18 @@
+# This tool is used to get the weather for a given location
+name: lookup_entity
+description: Entity catalogs lookup
+parameters:
+  type:
+    type: literal['airport', 'airline', 'airplane', 'aircraft_type', 'city', 'country', 'taxes']
+    description: Entity type to search for
+    required: false
+callable: 
+  file: actions/aviation/lookup_entity.py
+  function: lookup_entity
+  description: Entity catalogs lookup
+  parameters:
+    type:
+      type: literal['airport', 'airline', 'airplane', 'aircraft_type', 'city', 'country', 'taxes']
+      description: Entity type to search for
+      required: false
+  

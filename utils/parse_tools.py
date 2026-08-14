@@ -18,7 +18,7 @@ class ToolParseError(ValueError):
 
 
 def parse_tools(tools_directory: str | Path = TOOLS_DIRECTORY) -> list[dict[str, Any]]:
-    """Read and normalize every ``.yml`` tool definition in a directory.
+    """Recursively read and normalize every ``.yml`` tool definition.
 
     Tools are ordered by name so the resulting prompt remains deterministic.
     """
@@ -27,11 +27,13 @@ def parse_tools(tools_directory: str | Path = TOOLS_DIRECTORY) -> list[dict[str,
         raise ToolParseError(f"Tools directory does not exist: {directory}")
 
     tools: list[dict[str, Any]] = []
-    for tool_path in sorted(directory.glob("*.yml")):
+    for tool_path in sorted(directory.rglob("*.yml")):
         tools.append(_parse_tool(tool_path))
 
     if not tools:
-        raise ToolParseError(f"No .yml tool definitions found in {directory}")
+        raise ToolParseError(
+            f"No .yml tool definitions found in {directory} or its subdirectories"
+        )
 
     names = [tool["name"] for tool in tools]
     duplicates = sorted({name for name in names if names.count(name) > 1})
@@ -91,7 +93,10 @@ def main() -> None:
         "directory",
         nargs="?",
         default=TOOLS_DIRECTORY,
-        help=f"directory containing tool YAML files (default: {TOOLS_DIRECTORY})",
+        help=(
+            "directory recursively containing tool YAML files "
+            f"(default: {TOOLS_DIRECTORY})"
+        ),
     )
     args = parser.parse_args()
 

@@ -1,0 +1,17 @@
+# This tool is used to get the weather for a given location
+name: get_future_flights
+description: Get future flights
+parameters:
+  type:
+    type: literal['arrival', 'departure']
+    description: Arrival or departure to search flights 
+    required: false
+callable: 
+  file: actions/aviation/future_flights.py
+  function: get_future_flights
+  description: Get future flights
+  parameters:
+   type:
+    type: literal['arrival', 'departure']
+    description: Arrival or departure to search flights 
+    required: false

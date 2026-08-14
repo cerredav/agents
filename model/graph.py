@@ -6,6 +6,7 @@ from utils.read_yml import read_yml
 from utils.tokenizer import count_tokens
 from .connection import stream_model_response
 from utils.write_to_file import write_to_file
+from .state import State
 
 Message = dict[str, str]
 TokenCount = dict[str, int]
@@ -21,11 +22,19 @@ token_count: TokenCount = {
 INTENT_PROMPT_PATH = Path(__file__).parents[1] / "prompts" / "intent.yml"
 AGENTS_PROMPT_PATH = Path(__file__).parents[1] / "prompts" / "node.yml"
 
-def _intent_message() -> Message:
+def _intent_message(capabilities: list) -> Message:
     intent_prompt = read_yml(str(INTENT_PROMPT_PATH))["intent_prompt"]
+    # build capabilities
+    capas = ""
+    for c in capabilities:
+        capas += f"""
+        Capability: {c.get('capability')} \n
+        Tools: {c.get('tools')}
+        """
+    capas+='\n'
     return {
         "role": "system",
-        "content": intent_prompt,
+        "content": intent_prompt.format(capabilities=capas),
     }
 
 def _agents_message(user_intent: str, user_input: str) -> Message:
@@ -41,14 +50,17 @@ def submit_to_graph(user_input: str, onProgress: Callable | None = None):
     """
     context = ''
 
+    state = State(user_input = user_input)
+    state.define_capabilities()
+
     user_message = {
         "role": "user", 
         "content": user_input
     }
     # decipher a user's intent
-    intent_message = _intent_message()
+    intent_message = _intent_message(state.capabilies)
     intent_message_array = [
-        _intent_message(),
+        intent_message,
         user_message
     ]
     log = f"""[USER_INPUT] {user_input}\n[MODEL_INSTRUCTION] {intent_message["content"]}\n"""
@@ -65,6 +77,8 @@ def submit_to_graph(user_input: str, onProgress: Callable | None = None):
     token_count["reasoning"] += intent_response_tokens
     # callback
     onProgress(token_count)
+
+
 
     # define number of agents
     planner_message = _agents_message(user_intent=intent_response, user_input=user_input)

@@ -1,9 +1,9 @@
 # This tool is used to get the latitude and longitude for a given location name
-name: geocode
+name: named_location_to_lat_lon_pair
 description: Get the latitude and longitude for a given location name
 parameters:
   location:
-    type: string
+    type: str
     description: The location name to get the latitude and longitude for
     required: true
 callable: 
@@ -12,6 +12,6 @@ callable:
   description: Get the latitude and longitude for a given location name
   parameters:
     location:
-      type: string
+      type: str
       description: The location name to get the latitude and longitude for
       required: true

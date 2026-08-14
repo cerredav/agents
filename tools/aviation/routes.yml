@@ -1,0 +1,10 @@
+# This tool is used to get the weather for a given location
+name: get_routes
+description: Airline route metadata
+parameters:
+callable: 
+  file: actions/aviation/routes.py
+  function: get_routes
+  description: Airline route metadata
+  parameters:
+  

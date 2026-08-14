@@ -4,5 +4,5 @@
 }
 {
     "role": "user",
-    "content": "find the weather for tampa, new york city, and san juan puerto rico"
+    "content": "tell me about the weather in Tampa"
 }
