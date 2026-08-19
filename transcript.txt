@@ -4,5 +4,5 @@
 }
 {
     "role": "user",
-    "content": "what's the weather in tampa?"
+    "content": "how many flights are leaving out of Tampa today?"
 }

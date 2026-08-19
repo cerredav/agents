@@ -5,7 +5,6 @@ from utils.define_capabilities import define_capabilities
 aviation_path = Path(__file__).parents[1] / "tools" / "aviation"
 FLIGHTS_TOOL_PATH = aviation_path / "flights.yml"
 FUTURE_FLIGHTS_TOOL_PATH = aviation_path / "future_flights.yml"
-HISTORICAL_FLIGHTS_TOOL_PATH = aviation_path / "historical_flights.yml"
 LOOKUP_ENTITY_TOOL_PATH = aviation_path / "lookup_entity.yml"
 ROUTES_TOOL_PATH = aviation_path / "routes.yml"
 SCHEDULED_FLIGHTS_TOOL_PATH = aviation_path / "schedule_flights.yml"
@@ -20,7 +19,6 @@ def define():
   for t in [
     FLIGHTS_TOOL_PATH,
     FUTURE_FLIGHTS_TOOL_PATH,
-    HISTORICAL_FLIGHTS_TOOL_PATH,
     LOOKUP_ENTITY_TOOL_PATH,
     ROUTES_TOOL_PATH,
     SCHEDULED_FLIGHTS_TOOL_PATH

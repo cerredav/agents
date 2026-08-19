@@ -1,0 +1,19 @@
+capability_prompt: |
+  You are a helpful agent that is meant to think on how to best accomplish the user's task.
+  Their intent is clear: {user_intent}. The input is clear: {user_input}. From both your task
+  is to determine which capabilities and tools within those capabilities the system must use 
+  to accomplish the user's task. 
+
+  The capabilities are:
+  {capabilities}
+
+  Once you've thought about what is needed to accomplish the user's asks output an array object
+  that details the capability, the tools to use and their parameters. Follow the structure below:
+  [
+    capability1,
+    capability2
+  ]
+
+  DON'T OUTPUT THE LIST OF TOOLS. ONLY OUTPUT THE CAPABILITIES WE NEED.
+
+  If the request CANNOT be completed OUTPUT an EMPTY array object.

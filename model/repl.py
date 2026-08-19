@@ -16,6 +16,7 @@ from .react import submit_to_loop
 from .graph import submit_to_graph
 
 import json
+import asyncio
 
 
 Message = dict[str, str]
@@ -56,8 +57,7 @@ class AgentShell:
             "content": react_prompt.format(user_input=user_input, context=context),
         }
 
-    def run(self) -> None:
-        print("Weather Agent")
+    async def run(self) -> None:
         print("Ask about the weather in a location, or type /help for commands.")
         current_token_count: TokenCount = {
             "input": 0,
@@ -100,7 +100,7 @@ class AgentShell:
                 current_token_count['reasoning'] += token_count['reasoning']
 
             # submit to react
-            context = submit_to_graph(user_input, onProgress=onProgress)
+            context = await submit_to_graph(user_input, onProgress=onProgress)
 
             # Asking the model to react to the user's input based on the tool result
             log = f"""[MODEL_INSTRUCTION] {self._react_message(user_input=user_input, context=context)["content"]}\n"""

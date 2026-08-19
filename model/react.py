@@ -37,11 +37,15 @@ def _intent_message() -> Message:
         "content": intent_prompt,
     }
 
-def _planner_message(user_intent: str, context: str) -> Message:
+def _planner_message(user_intent: str, context: str, *, capability: str | None = None) -> Message:
     planner_prompt = read_yml(str(PLANNER_PROMPT_PATH))["planner_prompt"]
+    planner_str = planner_prompt.format(user_intent=user_intent, context=context)
+
+    if capability:
+        planner_str = f"You are a planning {capability} agent. " + planner_str 
     return {
         "role": "system",
-        "content": planner_prompt.format(user_intent=user_intent, context=context),
+        "content": planner_str,
     }
 
 def _reasoning_message(plan: str, context: str) -> Message:
@@ -134,12 +138,50 @@ def submit_to_loop(user_input: str, onProgress: Callable | None = None):
 
     return context
 
-def think(users_intent: str, context: str, onProgress: Callable) -> tuple[str, str, str, str]:
-    print('\n----------------------------------------------------------------')
-    print('Planning the next best course of action...')
-    print('----------------------------------------------------------------\n')
+async def submit_to_agent(user_input: str, user_intent: str, onProgress: Callable | None = None, *, capability: str | None = None):
+    has_completed = False
+    context = ''
+
+    # start loop until the model finishes.
+    # finishing rule is to have has_completed=True
+    while not has_completed:
+        # think and act
+        result = think(user_intent, context=context, onProgress=onProgress, capability=capability)
+        context += f"[TOOL_RESULT] {result}\n"
+        observe_message = _observe_message(context=context, user_request=user_input)
+
+        loop_response = ""
+        loop_chunks = []
+        log = f"""[MODEL_INSTRUCTION] {observe_message["content"]}\n"""
+        write_to_file(log_file, log)
+        # observe
+        for chunk in stream_model_response(tuple([observe_message])):
+            loop_chunks.append(chunk)
+
+        log = f"""[RESPONSE] {loop_response}"""
+        write_to_file(log_file, log, end_block=True)
+
+        # parse the loop response
+        loop_response = "".join(loop_chunks)
+        loop_response_tokens = count_tokens(loop_response)
+        token_count["reasoning"] += loop_response_tokens
+        # callback
+        onProgress(token_count)
+        try:
+            loop_response = loop_response.strip()
+            has_completed = loop_response.strip().lower() == "true"
+            print(f'[INFO] Has completed: {has_completed}')
+        except Exception as error:
+            print(f'\n[ERROR] Error parsing loop response: {error}')
+            print(f'\n[ERROR] Loop response: {loop_response}')
+            loop_response = False
+            has_completed = False
+
+    return context
+
+def think(users_intent: str, context: str, onProgress: Callable, *, capability: str | None = None) -> tuple[str, str, str, str]:
     # plan the next best course of action
-    planner_message = _planner_message(user_intent=users_intent, context=context)
+    planner_message = _planner_message(user_intent=users_intent, context=context, capability=capability)
     log = f"""[MODEL_INSTRUCTION] {planner_message["content"]}\n"""
     write_to_file(log_file, log)
     chunks = []
@@ -152,12 +194,12 @@ def think(users_intent: str, context: str, onProgress: Callable) -> tuple[str, s
     token_count["reasoning"] += count_tokens(planner_response)
     # callback
     onProgress(token_count)
-    print('\n----------------------------------------------------------------')
-    print('Reasoning about the next best course of action...')
-    print('----------------------------------------------------------------\n')
 
     # get the best tool to use
-    reasoning_message = _reasoning_message(plan=planner_response, context=context)
+    reasoning_message = _reasoning_message(
+        plan=planner_response, 
+        context=context, 
+    )
     log = f"""[MODEL_INSTRUCTION] {reasoning_message["content"]}\n"""
     write_to_file(log_file, log)
     chunks = []
@@ -181,20 +223,13 @@ def think(users_intent: str, context: str, onProgress: Callable) -> tuple[str, s
         reasoning_response = {}
         return None
 
-    print('\n----------------------------------------------------------------')
-    print('Using the tool...')
-    print('----------------------------------------------------------------\n')
-
     # use the tool
-    print(f'\n[INFO] Reasoning response: {reasoning_response}')
     tools = reasoning_response.get("tools", [])
     results = []
     for tool in tools:
         tool_name = next(iter(tool))
         t = tool.get(tool_name, None)
-        print('t', t)
         tool_parameters = t.get('parameters', {})
-        print('paramters', tool_parameters)
 
         # if tool is empty
         if tool_name is None and tool_parameters is None:
@@ -211,8 +246,4 @@ def think(users_intent: str, context: str, onProgress: Callable) -> tuple[str, s
         log = f"""[TOOL_USED] {tool_name}\n[TOOL_PARAMETERS] {tool_parameters}\n[RESULT] {results}"""
         write_to_file(log_file, log, end_block=True)
     
-    print('\n----------------------------------------------------------------')
-    print('Completed the task!')
-    print('----------------------------------------------------------------')
-
     return results

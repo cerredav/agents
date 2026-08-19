@@ -72,10 +72,11 @@ def run_tool(
 def _find_tool(
     tool_name: str, tools_directory: Path
 ) -> tuple[dict[str, Any], Path]:
+    """Recursively find a tool definition by its declared name."""
     if not tools_directory.is_dir():
         raise ToolExecutionError(f"Tools directory does not exist: {tools_directory}")
 
-    for definition_path in sorted(tools_directory.glob("*.yml")):
+    for definition_path in sorted(tools_directory.rglob("*.yml")):
         try:
             with definition_path.open("r", encoding="utf-8") as definition_file:
                 definition = yaml.safe_load(definition_file)

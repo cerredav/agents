@@ -6,12 +6,15 @@ can be added later without changing the shell itself.
 
 from __future__ import annotations
 
+import asyncio
+
 from model.repl import AgentShell
 
-def run_shell() -> None:
+
+async def run_shell() -> None:
     """Start an interactive weather-agent session."""
-    AgentShell().run()
+    await AgentShell().run()
 
 
 if __name__ == "__main__":
-    run_shell()
+    asyncio.run(run_shell())

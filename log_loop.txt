@@ -1,0 +1,893 @@
+[MODEL_INSTRUCTION] You are a planning aviation agent. Think step by step about the user's intent and output each thought between <think></think> tags. You are a planner agent that is mean to plan out the steps needed to accomplish the user's intented task. Tools will be provided in the future. 
+Don't worry about not having access to them yet, they will come. Focus on determining the next logical step needed to accomplish the task.
+For example:
+<think>
+  The user is asking about the weather in a given location. The user is tasking me to do this. What do I need to do to accomplish this task?
+</think>
+
+The user's intended task is: {"intent": "query flight departures from Tampa for the current day"}.
+The result of the tools used, if any, is: 
+
+Use the result of the tools to think about what has already been accomplished and what is left to be done. Think step by step about the tools used and the inteded task.
+
+After you have thought about how to accomplish the user's intended task in 
+a series of logical steps, you must output the following JSON object:
+
+<steps>
+  <step>step 1</step>
+  <step>step 2</step>
+  <step>step 3</step>
+</steps>
+
+If the user's intent has been completed then DON'T output steps to take. Instead output 
+"No further steps to take. Task has been completed according to provided data."
+[RESPONSE] <think>
+The user wants to know about flight departures from Tampa for the current day. To accomplish this, I need to find a way to access real-time or up-to-date flight information for Tampa airport (Tampa International Airport, IATA code: TPA) for today's scheduled departures.
+</think>
+
+<think>
+Since no tools are provided yet, the first step would be to identify how we could obtain this data. Typically, such information can be found on aviation websites or through official airport websites that provide real-time flight tracking and schedules.
+</think>
+
+<steps>
+  <step>Identify a reliable source for Tampa International Airport's (TPA) current day departures.</step>
+  <step>Access the identified source to retrieve today's departure schedule information.</step>
+  <step>Analyze the retrieved data to provide relevant flight details as requested by the user.</step>
+</steps>
+--------------------------------------------------------------------------------
+[MODEL_INSTRUCTION] You are a tool selection agent. You reason step by step. You analyze the provided PLAN and determine the tools needed to accomplish this plan in parallel. ONLY SUGGEST TOOLS IN PARALLEL IF THEY ARE INDEPENDENT. DO NOT RECOMMENDED TOOLS DEPENDENT ON THE OUTCOME OF OTHER TOOLS. You output the best set of tools in the following JSON object:
+
+{
+  "tools": 
+    [
+      {
+        "tool1": {
+          "parameters": "the parameters for the tool"
+        }
+      }
+    ],
+    [
+      {
+        "tool2": {
+          "parameters": "the parameters for the tool2"
+        }
+      }
+    ]
+}
+
+ALWAYS OUTPUT THE "paramters" FOR EACH SUGGESTED TOOL
+
+If the plan requires the tools we have to be called sequentially then ONLY output the first tool. The system will call that tool and then call the second later on. Don't suggest tools that are dependent on the output of the previous tools as these tools are to be ran in parallel, not sequentially.
+
+IF NO TOOLS ARE NEEDED, OUTPUT AN EMPTY JSON OBJECT: {}
+DON'T OUTPUT ANYTHING ELSE OR EXPLAIN YOUR THINKING PROCESS.
+
+The presented plan is: <think>
+The user wants to know about flight departures from Tampa for the current day. To accomplish this, I need to find a way to access real-time or up-to-date flight information for Tampa airport (Tampa International Airport, IATA code: TPA) for today's scheduled departures.
+</think>
+
+<think>
+Since no tools are provided yet, the first step would be to identify how we could obtain this data. Typically, such information can be found on aviation websites or through official airport websites that provide real-time flight tracking and schedules.
+</think>
+
+<steps>
+  <step>Identify a reliable source for Tampa International Airport's (TPA) current day departures.</step>
+  <step>Access the identified source to retrieve today's departure schedule information.</step>
+  <step>Analyze the retrieved data to provide relevant flight details as requested by the user.</step>
+</steps>
+
+The available system tools are:\n[
+  {
+    "name": "ask",
+    "description": "Ask the user a question to clarify their intent",
+    "parameters": {
+      "question": {
+        "type": "string",
+        "description": "The question to ask the user",
+        "required": true
+      }
+    }
+  },
+  {
+    "name": "get_current_weather",
+    "description": "Get the current weather for a given pair of latitude and longitude",
+    "parameters": {
+      "latitude": {
+        "type": "int",
+        "description": "The latitude of the location to get the weather for",
+        "required": true
+      },
+      "longitude": {
+        "type": "int",
+        "description": "The longitude of the location to get the weather for",
+        "required": true
+      }
+    }
+  },
+  {
+    "name": "get_flights",
+    "description": "Get the current or historical flights",
+    "parameters": {
+      "flight_date": {
+        "type": "str",
+        "description": "The latitude of the location to get the weather for",
+        "required": false
+      }
+    }
+  },
+  {
+    "name": "get_future_flights",
+    "description": "Get future flights",
+    "parameters": {
+      "type": {
+        "type": "literal['arrival', 'departure']",
+        "description": "Arrival or departure to search flights",
+        "required": false
+      }
+    }
+  },
+  {
+    "name": "get_routes",
+    "description": "Airline route metadata",
+    "parameters": {}
+  },
+  {
+    "name": "get_scheduled_flights",
+    "description": "Scheduled and future flights",
+    "parameters": {}
+  },
+  {
+    "name": "lookup_entity",
+    "description": "Entity catalogs lookup",
+    "parameters": {
+      "type": {
+        "type": "literal['airport', 'airline', 'airplane', 'aircraft_type', 'city', 'country', 'taxes']",
+        "description": "Entity type to search for",
+        "required": false
+      }
+    }
+  },
+  {
+    "name": "named_location_to_lat_lon_pair",
+    "description": "Get the latitude and longitude for a given location name",
+    "parameters": {
+      "location": {
+        "type": "str",
+        "description": "The location name to get the latitude and longitude for",
+        "required": true
+      }
+    }
+  },
+  {
+    "name": "regrep",
+    "description": "Search for a string across multiple files",
+    "parameters": {
+      "directory": {
+        "type": "string",
+        "description": "The directory to search in",
+        "required": true
+      }
+    }
+  }
+]
+
+Previously used tools and their results are: 
+[RESPONSE] {
+  "tools": [
+    {
+      "get_future_flights": {
+        "parameters": {
+          "type": "departure"
+        }
+      }
+    },
+    {
+      "lookup_entity": {
+        "parameters": {
+          "type": "airport",
+          "query": "Tampa International Airport"
+        }
+      }
+    }
+  ]
+}
+--------------------------------------------------------------------------------
+[TOOL_USED] get_future_flights
+[TOOL_PARAMETERS] {'type': 'departure'}
+[RESULT] [{'error': {'code': 0, 'type': 'method_not_supported'}}]
+--------------------------------------------------------------------------------
+[TOOL_USED] lookup_entity
+[TOOL_PARAMETERS] {'type': 'airport', 'query': 'Tampa International Airport'}
+[RESULT] [{'error': {'code': 0, 'type': 'method_not_supported'}}]
+--------------------------------------------------------------------------------
+[MODEL_INSTRUCTION] Think step by step here. Given the user's request and the tool's output, you must decide if it is sufficient to answer the user's request. Use the context provided below knowing the tool's output could be part of a much larger operation needed to answer the user's request.
+
+If the tool's output is sufficient to answer the user's request, you must output True. If the tool's output is not sufficient to answer the user's request, you must output False.
+
+The tool's output is provided below.
+The current transcript of the conversation is below.
+[TOOL_RESULT] [{'error': {'code': 0, 'type': 'method_not_supported'}}]
+
+
+The user's request is provided below.
+how many flights are leaving out of Tampa today?
+
+ONLY OUTPUT TRUE OR FALSE. DO NOT OUTPUT ANYTHING ELSE. DO NOT OUTPUT ANYTHING ELSE.
+
+[RESPONSE] 
+--------------------------------------------------------------------------------
+[MODEL_INSTRUCTION] You are a planning aviation agent. Think step by step about the user's intent and output each thought between <think></think> tags. You are a planner agent that is mean to plan out the steps needed to accomplish the user's intented task. Tools will be provided in the future. 
+Don't worry about not having access to them yet, they will come. Focus on determining the next logical step needed to accomplish the task.
+For example:
+<think>
+  The user is asking about the weather in a given location. The user is tasking me to do this. What do I need to do to accomplish this task?
+</think>
+
+The user's intended task is: {"intent": "query flight departures from Tampa for the current day"}.
+The result of the tools used, if any, is: [TOOL_RESULT] [{'error': {'code': 0, 'type': 'method_not_supported'}}]
+
+
+Use the result of the tools to think about what has already been accomplished and what is left to be done. Think step by step about the tools used and the inteded task.
+
+After you have thought about how to accomplish the user's intended task in 
+a series of logical steps, you must output the following JSON object:
+
+<steps>
+  <step>step 1</step>
+  <step>step 2</step>
+  <step>step 3</step>
+</steps>
+
+If the user's intent has been completed then DON'T output steps to take. Instead output 
+"No further steps to take. Task has been completed according to provided data."
+[RESPONSE] <think>
+The user wants flight departure information for Tampa on the current day, but there seems to be an error with the tool used, indicating that the method is not supported.
+To proceed, I need to identify an alternative source or method to retrieve this information. The logical steps would include finding a reliable API or database that provides real-time or scheduled flight data for airports.
+</think>
+<think>
+Since we don't have access to a specific tool yet, let's assume we will use a hypothetical aviation data provider API next time it is available.
+The steps should be:
+1. Identify and select an appropriate aviation data provider API that offers current day departure information for Tampa airport.
+2. Use the API to query flight departures from Tampa on the current day.
+3. Parse and provide the relevant flight departure details back to the user.
+</think>
+<steps>
+  <step>Identify a suitable aviation data provider API.</step>
+  <step>Use the chosen API to query for flight departures from Tampa airport on the current day.</step>
+  <step>Provide the parsed flight departure information to the user.</step>
+</steps>
+--------------------------------------------------------------------------------
+[MODEL_INSTRUCTION] You are a tool selection agent. You reason step by step. You analyze the provided PLAN and determine the tools needed to accomplish this plan in parallel. ONLY SUGGEST TOOLS IN PARALLEL IF THEY ARE INDEPENDENT. DO NOT RECOMMENDED TOOLS DEPENDENT ON THE OUTCOME OF OTHER TOOLS. You output the best set of tools in the following JSON object:
+
+{
+  "tools": 
+    [
+      {
+        "tool1": {
+          "parameters": "the parameters for the tool"
+        }
+      }
+    ],
+    [
+      {
+        "tool2": {
+          "parameters": "the parameters for the tool2"
+        }
+      }
+    ]
+}
+
+ALWAYS OUTPUT THE "paramters" FOR EACH SUGGESTED TOOL
+
+If the plan requires the tools we have to be called sequentially then ONLY output the first tool. The system will call that tool and then call the second later on. Don't suggest tools that are dependent on the output of the previous tools as these tools are to be ran in parallel, not sequentially.
+
+IF NO TOOLS ARE NEEDED, OUTPUT AN EMPTY JSON OBJECT: {}
+DON'T OUTPUT ANYTHING ELSE OR EXPLAIN YOUR THINKING PROCESS.
+
+The presented plan is: <think>
+The user wants flight departure information for Tampa on the current day, but there seems to be an error with the tool used, indicating that the method is not supported.
+To proceed, I need to identify an alternative source or method to retrieve this information. The logical steps would include finding a reliable API or database that provides real-time or scheduled flight data for airports.
+</think>
+<think>
+Since we don't have access to a specific tool yet, let's assume we will use a hypothetical aviation data provider API next time it is available.
+The steps should be:
+1. Identify and select an appropriate aviation data provider API that offers current day departure information for Tampa airport.
+2. Use the API to query flight departures from Tampa on the current day.
+3. Parse and provide the relevant flight departure details back to the user.
+</think>
+<steps>
+  <step>Identify a suitable aviation data provider API.</step>
+  <step>Use the chosen API to query for flight departures from Tampa airport on the current day.</step>
+  <step>Provide the parsed flight departure information to the user.</step>
+</steps>
+
+The available system tools are:\n[
+  {
+    "name": "ask",
+    "description": "Ask the user a question to clarify their intent",
+    "parameters": {
+      "question": {
+        "type": "string",
+        "description": "The question to ask the user",
+        "required": true
+      }
+    }
+  },
+  {
+    "name": "get_current_weather",
+    "description": "Get the current weather for a given pair of latitude and longitude",
+    "parameters": {
+      "latitude": {
+        "type": "int",
+        "description": "The latitude of the location to get the weather for",
+        "required": true
+      },
+      "longitude": {
+        "type": "int",
+        "description": "The longitude of the location to get the weather for",
+        "required": true
+      }
+    }
+  },
+  {
+    "name": "get_flights",
+    "description": "Get the current or historical flights",
+    "parameters": {
+      "flight_date": {
+        "type": "str",
+        "description": "The latitude of the location to get the weather for",
+        "required": false
+      }
+    }
+  },
+  {
+    "name": "get_future_flights",
+    "description": "Get future flights",
+    "parameters": {
+      "type": {
+        "type": "literal['arrival', 'departure']",
+        "description": "Arrival or departure to search flights",
+        "required": false
+      }
+    }
+  },
+  {
+    "name": "get_routes",
+    "description": "Airline route metadata",
+    "parameters": {}
+  },
+  {
+    "name": "get_scheduled_flights",
+    "description": "Scheduled and future flights",
+    "parameters": {}
+  },
+  {
+    "name": "lookup_entity",
+    "description": "Entity catalogs lookup",
+    "parameters": {
+      "type": {
+        "type": "literal['airport', 'airline', 'airplane', 'aircraft_type', 'city', 'country', 'taxes']",
+        "description": "Entity type to search for",
+        "required": false
+      }
+    }
+  },
+  {
+    "name": "named_location_to_lat_lon_pair",
+    "description": "Get the latitude and longitude for a given location name",
+    "parameters": {
+      "location": {
+        "type": "str",
+        "description": "The location name to get the latitude and longitude for",
+        "required": true
+      }
+    }
+  },
+  {
+    "name": "regrep",
+    "description": "Search for a string across multiple files",
+    "parameters": {
+      "directory": {
+        "type": "string",
+        "description": "The directory to search in",
+        "required": true
+      }
+    }
+  }
+]
+
+Previously used tools and their results are: [TOOL_RESULT] [{'error': {'code': 0, 'type': 'method_not_supported'}}]
+
+[RESPONSE] {
+  "tools": 
+    [
+      {
+        "get_scheduled_flights": {
+          "parameters": {
+            "flight_date": "today"
+          }
+        }
+      },
+      {
+        "lookup_entity": {
+          "parameters": {
+            "type": "airport",
+            "query": "Tampa"
+          }
+        }
+      }
+    ]
+}
+--------------------------------------------------------------------------------
+[TOOL_USED] get_scheduled_flights
+[TOOL_PARAMETERS] {'flight_date': 'today'}
+[RESULT] []
+--------------------------------------------------------------------------------
+[TOOL_USED] lookup_entity
+[TOOL_PARAMETERS] {'type': 'airport', 'query': 'Tampa'}
+[RESULT] []
+--------------------------------------------------------------------------------
+[MODEL_INSTRUCTION] Think step by step here. Given the user's request and the tool's output, you must decide if it is sufficient to answer the user's request. Use the context provided below knowing the tool's output could be part of a much larger operation needed to answer the user's request.
+
+If the tool's output is sufficient to answer the user's request, you must output True. If the tool's output is not sufficient to answer the user's request, you must output False.
+
+The tool's output is provided below.
+The current transcript of the conversation is below.
+[TOOL_RESULT] [{'error': {'code': 0, 'type': 'method_not_supported'}}]
+[TOOL_RESULT] []
+
+
+The user's request is provided below.
+how many flights are leaving out of Tampa today?
+
+ONLY OUTPUT TRUE OR FALSE. DO NOT OUTPUT ANYTHING ELSE. DO NOT OUTPUT ANYTHING ELSE.
+
+[RESPONSE] 
+--------------------------------------------------------------------------------
+[MODEL_INSTRUCTION] You are a planning aviation agent. Think step by step about the user's intent and output each thought between <think></think> tags. You are a planner agent that is mean to plan out the steps needed to accomplish the user's intented task. Tools will be provided in the future. 
+Don't worry about not having access to them yet, they will come. Focus on determining the next logical step needed to accomplish the task.
+For example:
+<think>
+  The user is asking about the weather in a given location. The user is tasking me to do this. What do I need to do to accomplish this task?
+</think>
+
+The user's intended task is: {"intent": "query flight departures from Tampa for the current day"}.
+The result of the tools used, if any, is: [TOOL_RESULT] [{'error': {'code': 0, 'type': 'method_not_supported'}}]
+[TOOL_RESULT] []
+
+
+Use the result of the tools to think about what has already been accomplished and what is left to be done. Think step by step about the tools used and the inteded task.
+
+After you have thought about how to accomplish the user's intended task in 
+a series of logical steps, you must output the following JSON object:
+
+<steps>
+  <step>step 1</step>
+  <step>step 2</step>
+  <step>step 3</step>
+</steps>
+
+If the user's intent has been completed then DON'T output steps to take. Instead output 
+"No further steps to take. Task has been completed according to provided data."
+[RESPONSE] <think>
+The user wants to query flight departures from Tampa for the current day, but there seems to be an error with the method used ('method_not_supported'). This means we need to find a different or appropriate way to get this information.
+</think>
+
+<think>
+Since the given tool returned an error and cannot provide flight departure data, I should look for other methods or APIs that can fetch such real-time flight information. Common sources are aviation tracking websites like FlightAware or official airport sites which often have API services for querying departures/arrivals.
+</think>
+
+<think>
+I need to find a reliable source API that supports querying flight departures and then use it to get the data for Tampa airport on the current day.
+</think>
+
+<steps>
+  <step>Identify a reliable aviation tracking service or API that provides real-time flight departure information.</step>
+  <step>Use the identified service/API to query all departing flights from Tampa airport (Tampa International Airport, IATA code: TPA) for today's date.</step>
+</steps>
+--------------------------------------------------------------------------------
+[MODEL_INSTRUCTION] You are a tool selection agent. You reason step by step. You analyze the provided PLAN and determine the tools needed to accomplish this plan in parallel. ONLY SUGGEST TOOLS IN PARALLEL IF THEY ARE INDEPENDENT. DO NOT RECOMMENDED TOOLS DEPENDENT ON THE OUTCOME OF OTHER TOOLS. You output the best set of tools in the following JSON object:
+
+{
+  "tools": 
+    [
+      {
+        "tool1": {
+          "parameters": "the parameters for the tool"
+        }
+      }
+    ],
+    [
+      {
+        "tool2": {
+          "parameters": "the parameters for the tool2"
+        }
+      }
+    ]
+}
+
+ALWAYS OUTPUT THE "paramters" FOR EACH SUGGESTED TOOL
+
+If the plan requires the tools we have to be called sequentially then ONLY output the first tool. The system will call that tool and then call the second later on. Don't suggest tools that are dependent on the output of the previous tools as these tools are to be ran in parallel, not sequentially.
+
+IF NO TOOLS ARE NEEDED, OUTPUT AN EMPTY JSON OBJECT: {}
+DON'T OUTPUT ANYTHING ELSE OR EXPLAIN YOUR THINKING PROCESS.
+
+The presented plan is: <think>
+The user wants to query flight departures from Tampa for the current day, but there seems to be an error with the method used ('method_not_supported'). This means we need to find a different or appropriate way to get this information.
+</think>
+
+<think>
+Since the given tool returned an error and cannot provide flight departure data, I should look for other methods or APIs that can fetch such real-time flight information. Common sources are aviation tracking websites like FlightAware or official airport sites which often have API services for querying departures/arrivals.
+</think>
+
+<think>
+I need to find a reliable source API that supports querying flight departures and then use it to get the data for Tampa airport on the current day.
+</think>
+
+<steps>
+  <step>Identify a reliable aviation tracking service or API that provides real-time flight departure information.</step>
+  <step>Use the identified service/API to query all departing flights from Tampa airport (Tampa International Airport, IATA code: TPA) for today's date.</step>
+</steps>
+
+The available system tools are:\n[
+  {
+    "name": "ask",
+    "description": "Ask the user a question to clarify their intent",
+    "parameters": {
+      "question": {
+        "type": "string",
+        "description": "The question to ask the user",
+        "required": true
+      }
+    }
+  },
+  {
+    "name": "get_current_weather",
+    "description": "Get the current weather for a given pair of latitude and longitude",
+    "parameters": {
+      "latitude": {
+        "type": "int",
+        "description": "The latitude of the location to get the weather for",
+        "required": true
+      },
+      "longitude": {
+        "type": "int",
+        "description": "The longitude of the location to get the weather for",
+        "required": true
+      }
+    }
+  },
+  {
+    "name": "get_flights",
+    "description": "Get the current or historical flights",
+    "parameters": {
+      "flight_date": {
+        "type": "str",
+        "description": "The latitude of the location to get the weather for",
+        "required": false
+      }
+    }
+  },
+  {
+    "name": "get_future_flights",
+    "description": "Get future flights",
+    "parameters": {
+      "type": {
+        "type": "literal['arrival', 'departure']",
+        "description": "Arrival or departure to search flights",
+        "required": false
+      }
+    }
+  },
+  {
+    "name": "get_routes",
+    "description": "Airline route metadata",
+    "parameters": {}
+  },
+  {
+    "name": "get_scheduled_flights",
+    "description": "Scheduled and future flights",
+    "parameters": {}
+  },
+  {
+    "name": "lookup_entity",
+    "description": "Entity catalogs lookup",
+    "parameters": {
+      "type": {
+        "type": "literal['airport', 'airline', 'airplane', 'aircraft_type', 'city', 'country', 'taxes']",
+        "description": "Entity type to search for",
+        "required": false
+      }
+    }
+  },
+  {
+    "name": "named_location_to_lat_lon_pair",
+    "description": "Get the latitude and longitude for a given location name",
+    "parameters": {
+      "location": {
+        "type": "str",
+        "description": "The location name to get the latitude and longitude for",
+        "required": true
+      }
+    }
+  },
+  {
+    "name": "regrep",
+    "description": "Search for a string across multiple files",
+    "parameters": {
+      "directory": {
+        "type": "string",
+        "description": "The directory to search in",
+        "required": true
+      }
+    }
+  }
+]
+
+Previously used tools and their results are: [TOOL_RESULT] [{'error': {'code': 0, 'type': 'method_not_supported'}}]
+[TOOL_RESULT] []
+
+[RESPONSE] {
+  "tools": 
+    [
+      {
+        "get_future_flights": {
+          "parameters": {
+            "type": "departure",
+            "location": "Tampa International Airport"
+          }
+        }
+      },
+      {
+        "lookup_entity": {
+          "parameters": {
+            "type": "airport",
+            "query": "TPA"
+          }
+        }
+      }
+    ]
+}
+--------------------------------------------------------------------------------
+[TOOL_USED] get_future_flights
+[TOOL_PARAMETERS] {'type': 'departure', 'location': 'Tampa International Airport'}
+[RESULT] []
+--------------------------------------------------------------------------------
+[TOOL_USED] lookup_entity
+[TOOL_PARAMETERS] {'type': 'airport', 'query': 'TPA'}
+[RESULT] []
+--------------------------------------------------------------------------------
+[MODEL_INSTRUCTION] Think step by step here. Given the user's request and the tool's output, you must decide if it is sufficient to answer the user's request. Use the context provided below knowing the tool's output could be part of a much larger operation needed to answer the user's request.
+
+If the tool's output is sufficient to answer the user's request, you must output True. If the tool's output is not sufficient to answer the user's request, you must output False.
+
+The tool's output is provided below.
+The current transcript of the conversation is below.
+[TOOL_RESULT] [{'error': {'code': 0, 'type': 'method_not_supported'}}]
+[TOOL_RESULT] []
+[TOOL_RESULT] []
+
+
+The user's request is provided below.
+how many flights are leaving out of Tampa today?
+
+ONLY OUTPUT TRUE OR FALSE. DO NOT OUTPUT ANYTHING ELSE. DO NOT OUTPUT ANYTHING ELSE.
+
+[RESPONSE] 
+--------------------------------------------------------------------------------
+[MODEL_INSTRUCTION] You are a planning aviation agent. Think step by step about the user's intent and output each thought between <think></think> tags. You are a planner agent that is mean to plan out the steps needed to accomplish the user's intented task. Tools will be provided in the future. 
+Don't worry about not having access to them yet, they will come. Focus on determining the next logical step needed to accomplish the task.
+For example:
+<think>
+  The user is asking about the weather in a given location. The user is tasking me to do this. What do I need to do to accomplish this task?
+</think>
+
+The user's intended task is: {"intent": "query flight departures from Tampa for the current day"}.
+The result of the tools used, if any, is: [TOOL_RESULT] [{'error': {'code': 0, 'type': 'method_not_supported'}}]
+[TOOL_RESULT] []
+[TOOL_RESULT] []
+
+
+Use the result of the tools to think about what has already been accomplished and what is left to be done. Think step by step about the tools used and the inteded task.
+
+After you have thought about how to accomplish the user's intended task in 
+a series of logical steps, you must output the following JSON object:
+
+<steps>
+  <step>step 1</step>
+  <step>step 2</step>
+  <step>step 3</step>
+</steps>
+
+If the user's intent has been completed then DON'T output steps to take. Instead output 
+"No further steps to take. Task has been completed according to provided data."
+[RESPONSE] <think>
+The user wants information about flight departures from Tampa for the current day. However, I received an error message indicating that a method is not supported when trying to retrieve this information. What should be my next logical step?
+</think>
+
+<think>
+Since there's no direct support for querying flight departure data from Tampa, I need to explore alternative methods or sources where such information might be available.
+</think>
+
+<steps>
+  <step>Identify and access an appropriate API or database that provides real-time flight departure information.</step>
+  <step>Query the identified source for flights departing from Tampa on the current day.</step>
+  <step>Analyze the retrieved data to ensure it meets the user's requirements before presenting it.</step>
+</steps>
+--------------------------------------------------------------------------------
+[MODEL_INSTRUCTION] You are a tool selection agent. You reason step by step. You analyze the provided PLAN and determine the tools needed to accomplish this plan in parallel. ONLY SUGGEST TOOLS IN PARALLEL IF THEY ARE INDEPENDENT. DO NOT RECOMMENDED TOOLS DEPENDENT ON THE OUTCOME OF OTHER TOOLS. You output the best set of tools in the following JSON object:
+
+{
+  "tools": 
+    [
+      {
+        "tool1": {
+          "parameters": "the parameters for the tool"
+        }
+      }
+    ],
+    [
+      {
+        "tool2": {
+          "parameters": "the parameters for the tool2"
+        }
+      }
+    ]
+}
+
+ALWAYS OUTPUT THE "paramters" FOR EACH SUGGESTED TOOL
+
+If the plan requires the tools we have to be called sequentially then ONLY output the first tool. The system will call that tool and then call the second later on. Don't suggest tools that are dependent on the output of the previous tools as these tools are to be ran in parallel, not sequentially.
+
+IF NO TOOLS ARE NEEDED, OUTPUT AN EMPTY JSON OBJECT: {}
+DON'T OUTPUT ANYTHING ELSE OR EXPLAIN YOUR THINKING PROCESS.
+
+The presented plan is: <think>
+The user wants information about flight departures from Tampa for the current day. However, I received an error message indicating that a method is not supported when trying to retrieve this information. What should be my next logical step?
+</think>
+
+<think>
+Since there's no direct support for querying flight departure data from Tampa, I need to explore alternative methods or sources where such information might be available.
+</think>
+
+<steps>
+  <step>Identify and access an appropriate API or database that provides real-time flight departure information.</step>
+  <step>Query the identified source for flights departing from Tampa on the current day.</step>
+  <step>Analyze the retrieved data to ensure it meets the user's requirements before presenting it.</step>
+</steps>
+
+The available system tools are:\n[
+  {
+    "name": "ask",
+    "description": "Ask the user a question to clarify their intent",
+    "parameters": {
+      "question": {
+        "type": "string",
+        "description": "The question to ask the user",
+        "required": true
+      }
+    }
+  },
+  {
+    "name": "get_current_weather",
+    "description": "Get the current weather for a given pair of latitude and longitude",
+    "parameters": {
+      "latitude": {
+        "type": "int",
+        "description": "The latitude of the location to get the weather for",
+        "required": true
+      },
+      "longitude": {
+        "type": "int",
+        "description": "The longitude of the location to get the weather for",
+        "required": true
+      }
+    }
+  },
+  {
+    "name": "get_flights",
+    "description": "Get the current or historical flights",
+    "parameters": {
+      "flight_date": {
+        "type": "str",
+        "description": "The latitude of the location to get the weather for",
+        "required": false
+      }
+    }
+  },
+  {
+    "name": "get_future_flights",
+    "description": "Get future flights",
+    "parameters": {
+      "type": {
+        "type": "literal['arrival', 'departure']",
+        "description": "Arrival or departure to search flights",
+        "required": false
+      }
+    }
+  },
+  {
+    "name": "get_routes",
+    "description": "Airline route metadata",
+    "parameters": {}
+  },
+  {
+    "name": "get_scheduled_flights",
+    "description": "Scheduled and future flights",
+    "parameters": {}
+  },
+  {
+    "name": "lookup_entity",
+    "description": "Entity catalogs lookup",
+    "parameters": {
+      "type": {
+        "type": "literal['airport', 'airline', 'airplane', 'aircraft_type', 'city', 'country', 'taxes']",
+        "description": "Entity type to search for",
+        "required": false
+      }
+    }
+  },
+  {
+    "name": "named_location_to_lat_lon_pair",
+    "description": "Get the latitude and longitude for a given location name",
+    "parameters": {
+      "location": {
+        "type": "str",
+        "description": "The location name to get the latitude and longitude for",
+        "required": true
+      }
+    }
+  },
+  {
+    "name": "regrep",
+    "description": "Search for a string across multiple files",
+    "parameters": {
+      "directory": {
+        "type": "string",
+        "description": "The directory to search in",
+        "required": true
+      }
+    }
+  }
+]
+
+Previously used tools and their results are: [TOOL_RESULT] [{'error': {'code': 0, 'type': 'method_not_supported'}}]
+[TOOL_RESULT] []
+[TOOL_RESULT] []
+
+[RESPONSE] {
+  "tools": 
+    [
+      {
+        "get_future_flights": {
+          "parameters": {
+            "type": "departure"
+          }
+        }
+      },
+      {
+        "named_location_to_lat_lon_pair": {
+          "parameters": {
+            "location": "Tampa"
+          }
+        }
+      },
+      {
+        "ask": {
+          "parameters": {
+            "question": "Are you looking for flights departing from Tampa International Airport specifically?"
+          }
+        }
+      }
+    ]
+}
+--------------------------------------------------------------------------------
+[TOOL_USED] get_future_flights
+[TOOL_PARAMETERS] {'type': 'departure'}
+[RESULT] [{'error': {'code': 0, 'type': 'method_not_supported'}}]
+--------------------------------------------------------------------------------
+[TOOL_USED] named_location_to_lat_lon_pair
+[TOOL_PARAMETERS] {'location': 'Tampa'}
+[RESULT] [{'error': {'code': 0, 'type': 'method_not_supported'}}, {'place_id': 303817274, 'licence': 'Data © OpenStreetMap contributors, ODbL 1.0. http://osm.org/copyright', 'osm_type': 'relation', 'osm_id': 1216849, 'lat': '27.9449854', 'lon': '-82.4583107', 'class': 'boundary', 'type': 'administrative', 'place_rank': 16, 'importance': 0.674213256081733, 'addresstype': 'city', 'name': 'Tampa', 'display_name': 'Tampa, Hillsborough County, Florida, United States', 'boundingbox': ['27.8126539', '28.1713602', '-82.6488200', '-82.2538678']}]
+--------------------------------------------------------------------------------

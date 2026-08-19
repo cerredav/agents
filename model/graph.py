@@ -21,30 +21,39 @@ token_count: TokenCount = {
 
 INTENT_PROMPT_PATH = Path(__file__).parents[1] / "prompts" / "intent.yml"
 AGENTS_PROMPT_PATH = Path(__file__).parents[1] / "prompts" / "node.yml"
+CAPABILITIES_PROMPT_PATH = Path(__file__).parents[1] / "prompts" / "capability.yml"
 
-def _intent_message(capabilities: list) -> Message:
-    intent_prompt = read_yml(str(INTENT_PROMPT_PATH))["intent_prompt"]
-    # build capabilities
+def _get_capabilities(capabilities: list, *, tools: bool = False) -> str:
+    # get capabilities in str
     capas = ""
     for c in capabilities:
         capas += f"""
         Capability: {c.get('capability')} \n
-        Tools: {c.get('tools')}
         """
+        if tools:
+            capas += f"{c.get('tools')}"
     capas+='\n'
+    return capas
+
+def _intent_message() -> Message:
+    intent_prompt = read_yml(str(INTENT_PROMPT_PATH))["intent_prompt"]
     return {
         "role": "system",
-        "content": intent_prompt.format(capabilities=capas),
+        "content": intent_prompt.format(),
     }
 
-def _agents_message(user_intent: str, user_input: str) -> Message:
-    agents_prompt = read_yml(str(AGENTS_PROMPT_PATH))["node_prompt"]
+def _capabilities_message(user_intent: str, user_input: str, capabilities: str) -> Message:
+    agents_prompt = read_yml(str(CAPABILITIES_PROMPT_PATH))["capability_prompt"]
     return {
         "role": "system",
-        "content": agents_prompt.format(user_intent=user_intent, user_input=user_input),
+        "content": agents_prompt.format(
+            user_intent=user_intent, 
+            user_input=user_input,
+            capabilities=_get_capabilities(capabilities)
+            ),
     }
 
-def submit_to_graph(user_input: str, onProgress: Callable | None = None):
+async def submit_to_graph(user_input: str, onProgress: Callable | None = None):
     """
     Accept a user input and start the graph
     """
@@ -58,7 +67,7 @@ def submit_to_graph(user_input: str, onProgress: Callable | None = None):
         "content": user_input
     }
     # decipher a user's intent
-    intent_message = _intent_message(state.capabilies)
+    intent_message = _intent_message()
     intent_message_array = [
         intent_message,
         user_message
@@ -78,19 +87,41 @@ def submit_to_graph(user_input: str, onProgress: Callable | None = None):
     # callback
     onProgress(token_count)
 
-    # define number of agents
-    planner_message = _agents_message(user_intent=intent_response, user_input=user_input)
-    log = f"""[MODEL_INSTRUCTION] {planner_message["content"]}\n"""
+    # get capability pack
+    capability_message = _capabilities_message(
+        user_intent=intent_response, 
+        user_input=user_input,
+        capabilities=state.capabilies
+    )
+    log = f"""[MODEL_INSTRUCTION] {capability_message["content"]}\n"""
     write_to_file(log_file, log)
     chunks = []
-    for chunk in stream_model_response(tuple([planner_message])):
+    for chunk in stream_model_response(tuple([capability_message])):
         chunks.append(chunk)
-        print(chunk, end="", flush=True)
 
-    planner_response = ''.join(chunk)
-    print('planner response', planner_response)
+    capability_response = ''.join(chunks)
+    capabilities = None
     try:
-        agents = json.loads(planner_response)
-        print('agents', agents)
+        capabilities = json.loads(capability_response)
     except Exception as e:
-        print('error parsing json planner_response', planner_response)
+        print('error parsing json planner_response', capability_response)
+
+
+    from .react import submit_to_agent
+    import asyncio
+
+    print('-----------------capabilties-----------------', capabilities)
+    agents = [
+        submit_to_agent(
+            user_input=user_input,
+            user_intent=intent_response,
+            onProgress=onProgress,
+            capability=capability
+        ) for capability in capabilities
+    ]
+    result = await asyncio.gather(*agents)
+
+    for r in result:
+        if r is not None:
+            context += r
+    return context

@@ -9,8 +9,13 @@ def get_all():
 
     from .aviation import define as define_aviation
     aviation = define_aviation()
+
+    from .geocode import define as define_geocode
+    geocode = define_geocode()
+
     return [
         weather,
         ask,
-        aviation
+        aviation,
+        geocode
     ]
