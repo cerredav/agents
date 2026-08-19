@@ -78,8 +78,6 @@ def submit_to_graph(user_input: str, onProgress: Callable | None = None):
     # callback
     onProgress(token_count)
 
-
-
     # define number of agents
     planner_message = _agents_message(user_intent=intent_response, user_input=user_input)
     log = f"""[MODEL_INSTRUCTION] {planner_message["content"]}\n"""
@@ -90,6 +88,7 @@ def submit_to_graph(user_input: str, onProgress: Callable | None = None):
         print(chunk, end="", flush=True)
 
     planner_response = ''.join(chunk)
+    print('planner response', planner_response)
     try:
         agents = json.loads(planner_response)
         print('agents', agents)

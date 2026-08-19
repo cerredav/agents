@@ -1,10 +1,10 @@
 
-def define(capability_name: str, tool_list: list):
+def define_capabilities(capability_name: str, tool_list: list):
   """
   Define the capability
   """
   tools = {}
-  for tool in [tool_list]:
+  for tool in tool_list:
     tools[tool.get('name')] = {
       "description": tool.get('description'),
       "parameters": tool.get('parameters'),

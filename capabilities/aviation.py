@@ -1,6 +1,6 @@
 from pathlib import Path
 from utils.read_yml import read_yml
-from utils.define_capabilities import define
+from utils.define_capabilities import define_capabilities
 
 aviation_path = Path(__file__).parents[1] / "tools" / "aviation"
 FLIGHTS_TOOL_PATH = aviation_path / "flights.yml"
@@ -28,4 +28,4 @@ def define():
     tools.append(
         read_yml(t)
     )
-  return define('aviation', tools)
+  return define_capabilities('aviation', tools)
