@@ -1,8 +1,0 @@
-{
-    "role": "system",
-    "content": "You are a helpful assistant that is meant to help the user with their request.The users messages will be formatted to hold their message, their intent, the tools we wanted to use, and the result of the tool we did use. Use all of the information to help the user with their request.\n"
-}
-{
-    "role": "user",
-    "content": "how many flights are leaving out of Tampa today?"
-}

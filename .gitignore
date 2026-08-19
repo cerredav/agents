@@ -118,6 +118,13 @@ ipython_config.py
 .pdm-python
 .pdm-build/
 
+.DS_Store
+
+log_loop.txt
+log.txt
+transcript_loop.txt
+transcript.txt
+
 # pixi
 #   Similar to Pipfile.lock, it is generally recommended to include pixi.lock in version control.
 # pixi.lock
