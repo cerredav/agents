@@ -1,0 +1,16 @@
+{
+    "role": "system",
+    "content": "You are a helpful assistant that is meant to help the user with their request.The users messages will be formatted to hold their message, their intent, the tools we wanted to use, and the result of the tool we did use. Use all of the information to help the user with their request.\n"
+}
+{
+    "role": "user",
+    "content": "how many flights are leaving out of tampa today?"
+}
+{
+    "role": "assistant",
+    "content": "Got it! I'll use the flight data you provided to answer any questions you have about flights departing from Tampa International Airport on August 22, 2023. What would you like to know?"
+}
+{
+    "role": "user",
+    "content": "how many flights are leaving out of tampa today?"
+}

@@ -1,11 +1,48 @@
-# This tool is used to get the weather for a given location
 name: get_scheduled_flights
-description: Scheduled and future flights
-parameters:
-callable: 
-  file: actions/aviation/scheduled_flights.py
+description: Get airport arrivals or departures scheduled for a future date
+parameters: &future_schedule_parameters
+  iataCode:
+    type: str
+    description: IATA code of the airport whose schedule is requested
+    required: true
+  type:
+    type: literal['arrival', 'departure']
+    description: Schedule direction
+    required: true
+  date:
+    type: str
+    description: Future date in YYYY-MM-DD format
+    required: true
+  dep_iataCode:
+    type: str
+    description: Departure airport IATA code filter for arrival schedules
+    required: false
+  dep_icaoCode:
+    type: str
+    description: Departure airport ICAO code filter for arrival schedules
+    required: false
+  arr_iataCode:
+    type: str
+    description: Arrival airport IATA code filter for departure schedules
+    required: false
+  arr_icaoCode:
+    type: str
+    description: Arrival airport ICAO code filter for departure schedules
+    required: false
+  airline_iata:
+    type: str
+    description: Airline IATA code
+    required: false
+  airline_icao:
+    type: str
+    description: Airline ICAO code
+    required: false
+  flight_num:
+    type: int
+    description: Numeric flight number
+    required: false
+callable:
+  file: actions/aviation/schedule_flights.py
   function: get_scheduled_flights
-  description: Scheduled and future flights
-  parameters:
-
-  
+  description: Get airport arrivals or departures scheduled for a future date
+  parameters: *future_schedule_parameters

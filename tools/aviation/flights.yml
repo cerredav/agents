@@ -1,18 +1,88 @@
-# This tool is used to get the weather for a given location
 name: get_flights
-description: Get the current or historical flights
-parameters:
+description: Get real-time or historical flights with optional pagination and filters
+parameters: &flight_parameters
+  limit:
+    type: int
+    description: Maximum number of results to return (up to 100)
+    required: false
+  offset:
+    type: int
+    description: Number of results to skip for pagination
+    required: false
+  flight_status:
+    type: literal['scheduled', 'active', 'landed', 'cancelled', 'incident', 'diverted']
+    description: Flight status to return
+    required: false
   flight_date:
     type: str
-    description: The latitude of the location to get the weather for
+    description: Flight date in YYYY-MM-DD format
     required: false
-callable: 
+  dep_iata:
+    type: str
+    description: Departure city or airport IATA code
+    required: false
+  arr_iata:
+    type: str
+    description: Arrival city or airport IATA code
+    required: false
+  dep_icao:
+    type: str
+    description: Departure airport ICAO code
+    required: false
+  arr_icao:
+    type: str
+    description: Arrival airport ICAO code
+    required: false
+  airline_name:
+    type: str
+    description: Airline name
+    required: false
+  airline_iata:
+    type: str
+    description: Airline IATA code
+    required: false
+  airline_icao:
+    type: str
+    description: Airline ICAO code
+    required: false
+  flight_number:
+    type: int
+    description: Numeric flight number
+    required: false
+  flight_iata:
+    type: str
+    description: Flight IATA code
+    required: false
+  flight_icao:
+    type: str
+    description: Flight ICAO code
+    required: false
+  min_delay_dep:
+    type: int
+    description: Minimum departure delay in minutes
+    required: false
+  min_delay_arr:
+    type: int
+    description: Minimum arrival delay in minutes
+    required: false
+  max_delay_dep:
+    type: int
+    description: Maximum departure delay in minutes
+    required: false
+  max_delay_arr:
+    type: int
+    description: Maximum arrival delay in minutes
+    required: false
+  arr_scheduled_time_arr:
+    type: str
+    description: Scheduled arrival date in YYYY-MM-DD format
+    required: false
+  arr_scheduled_time_dep:
+    type: str
+    description: Scheduled departure date in YYYY-MM-DD format
+    required: false
+callable:
   file: actions/aviation/flights.py
   function: get_flights
-  description: Get the current or historical flights
-  parameters:
-    flight_date:
-      type: str
-      description: The latitude of the location to get the weather for
-      required: false
-  
+  description: Get real-time or historical flights with optional pagination and filters
+  parameters: *flight_parameters

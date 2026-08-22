@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import argparse
 import json
 from pathlib import Path
@@ -17,7 +18,7 @@ class ToolParseError(ValueError):
     """Raised when a tool definition is missing or malformed."""
 
 
-def parse_tools(tools_directory: str | Path = TOOLS_DIRECTORY) -> list[dict[str, Any]]:
+def parse_tools(tools_directory: str | Path = TOOLS_DIRECTORY, capability: str | None = None) -> list[dict[str, Any]]:
     """Recursively read and normalize every ``.yml`` tool definition.
 
     Tools are ordered by name so the resulting prompt remains deterministic.
@@ -27,8 +28,14 @@ def parse_tools(tools_directory: str | Path = TOOLS_DIRECTORY) -> list[dict[str,
         raise ToolParseError(f"Tools directory does not exist: {directory}")
 
     tools: list[dict[str, Any]] = []
-    for tool_path in sorted(directory.rglob("*.yml")):
-        tools.append(_parse_tool(tool_path))
+    if capability:
+        if os.path.isdir(directory / capability):
+            tools = parse_tools(directory / capability)
+        else:
+            tools.append(_parse_tool(directory / f"{capability}.yml"))
+    else:
+        for tool_path in sorted(directory.rglob("*.yml")):
+            tools.append(_parse_tool(tool_path))
 
     if not tools:
         raise ToolParseError(
@@ -80,9 +87,11 @@ def _parse_tool(tool_path: Path) -> dict[str, Any]:
 
 def format_tools_for_prompt(
     tools_directory: str | Path = TOOLS_DIRECTORY,
+    *,
+    capability: str | None = None
 ) -> str:
     """Return tool definitions as readable JSON for ``reasoning.yml``."""
-    return json.dumps(parse_tools(tools_directory), indent=2, ensure_ascii=False)
+    return json.dumps(parse_tools(tools_directory, capability), indent=2, ensure_ascii=False)
 
 
 def main() -> None:

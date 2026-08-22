@@ -110,7 +110,7 @@ async def submit_to_graph(user_input: str, onProgress: Callable | None = None):
     from .react import submit_to_agent
     import asyncio
 
-    print('-----------------capabilties-----------------', capabilities)
+    print(f'\nCreating {len(capabilities)} ReAct loops')
     agents = [
         submit_to_agent(
             user_input=user_input,

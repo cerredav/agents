@@ -48,9 +48,9 @@ def _planner_message(user_intent: str, context: str, *, capability: str | None =
         "content": planner_str,
     }
 
-def _reasoning_message(plan: str, context: str) -> Message:
+def _reasoning_message(plan: str, context: str, *, capability: str | None = None) -> Message:
     reasoning_prompt = read_yml(str(REASONING_PROMPT_PATH))["reasoning_prompt"]
-    system_tools = format_tools_for_prompt()
+    system_tools = format_tools_for_prompt(capability=capability)
     return {
         "role": "system",
         "content": reasoning_prompt.format(plan=plan, system_tools=system_tools, context=context),
@@ -199,6 +199,7 @@ def think(users_intent: str, context: str, onProgress: Callable, *, capability: 
     reasoning_message = _reasoning_message(
         plan=planner_response, 
         context=context, 
+        capability=capability
     )
     log = f"""[MODEL_INSTRUCTION] {reasoning_message["content"]}\n"""
     write_to_file(log_file, log)
@@ -217,9 +218,7 @@ def think(users_intent: str, context: str, onProgress: Callable, *, capability: 
         # parse the reasoning response
         reasoning_response = json.loads(reasoning_response)
     except Exception as error:
-        print("\n[ERROR] Error parsing reasoning response")
-        print(f"[ERROR] Error: {error}", end="", flush=True)
-        print(f"\n[ERROR] Reasoning response: {reasoning_response}", end="", flush=True)
+        print(f"\n[ERROR] {error} Reasoning response: {reasoning_response}", end="", flush=True)
         reasoning_response = {}
         return None
 
@@ -238,7 +237,6 @@ def think(users_intent: str, context: str, onProgress: Callable, *, capability: 
             try:
                 result = run_tool(tool_name, tool_parameters)
                 results.append(result)
-                print(f"\n[INFO] Result: {result}", end="", flush=True)
             except Exception as error:
                 print(f"\n[ERROR] Error running tool: {error}")
 
