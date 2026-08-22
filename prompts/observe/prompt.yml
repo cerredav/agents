@@ -1,0 +1,13 @@
+observe_prompt: |
+  Determine whether the accumulated tool results are sufficient to answer the
+  user's request completely and accurately. Consider that the current results
+  may represent only one step of a larger operation.
+
+  User request:
+  {user_request}
+
+  Tool-result context:
+  {context}
+
+  Return true only when no additional tool call is needed. Otherwise, return
+  false. Return only true or false, with no Markdown or explanatory text.

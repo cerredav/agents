@@ -22,13 +22,14 @@ token_count: TokenCount = {
     "reasoning": 0
 }
 
-SYSTEM_PROMPT_PATH = Path(__file__).parents[1] / "prompts" / "system.yml"
-INTENT_PROMPT_PATH = Path(__file__).parents[1] / "prompts" / "intent.yml"
-REASONING_PROMPT_PATH = Path(__file__).parents[1] / "prompts" / "reasoning.yml"
-LOOP_PROMPT_PATH = Path(__file__).parents[1] / "prompts" / "loop.yml"
-PLANNER_PROMPT_PATH = Path(__file__).parents[1] / "prompts" / "planner.yml"
-OBSERVE_PROMPT_PATH = Path(__file__).parents[1] / "prompts" / "observe.yml"
-REACT_PROMPT_PATH = Path(__file__).parents[1] / "prompts" / "react.yml"
+PROMPTS_PATH = Path(__file__).parents[1] / "prompts"
+SYSTEM_PROMPT_PATH = PROMPTS_PATH / "system" / "prompt.yml"
+INTENT_PROMPT_PATH = PROMPTS_PATH / "intent" / "prompt.yml"
+REASONING_PROMPT_PATH = PROMPTS_PATH / "reasoning" / "prompt.yml"
+LOOP_PROMPT_PATH = PROMPTS_PATH / "loop" / "prompt.yml"
+PLANNER_PROMPT_PATH = PROMPTS_PATH / "planner" / "prompt.yml"
+OBSERVE_PROMPT_PATH = PROMPTS_PATH / "observe" / "prompt.yml"
+REACT_PROMPT_PATH = PROMPTS_PATH / "react" / "prompt.yml"
 
 def _intent_message() -> Message:
     intent_prompt = read_yml(str(INTENT_PROMPT_PATH))["intent_prompt"]

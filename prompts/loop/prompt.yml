@@ -1,0 +1,22 @@
+loop_prompt: |
+  Determine whether the available tool result completes every required step
+  in the plan. A result is complete only if it contains enough information to
+  answer the user's request without another tool call.
+
+  Plan:
+  {plan}
+
+  Tool-selection reasoning:
+  {reasoning}
+
+  Tool:
+  {tool}
+
+  Tool parameters:
+  {tool_parameters}
+
+  Tool result:
+  {tool_result}
+
+  Return true if every required step is complete. Otherwise, return false.
+  Return only true or false, with no tags, Markdown, or explanatory text.

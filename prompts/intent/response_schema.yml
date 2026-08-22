@@ -1,0 +1,12 @@
+response_format:
+  type: json_schema
+  json_schema:
+    name: intent_response
+    strict: true
+    schema:
+      type: object
+      properties:
+        intent:
+          type: string
+      required: [intent]
+      additionalProperties: false

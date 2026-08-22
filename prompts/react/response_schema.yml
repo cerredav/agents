@@ -1,0 +1,2 @@
+# This stage returns user-facing prose, so no structured response is requested.
+response_format: null

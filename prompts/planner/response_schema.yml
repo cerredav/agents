@@ -1,0 +1,14 @@
+response_format:
+  type: json_schema
+  json_schema:
+    name: planner_response
+    strict: true
+    schema:
+      type: object
+      properties:
+        steps:
+          type: array
+          items:
+            type: string
+      required: [steps]
+      additionalProperties: false

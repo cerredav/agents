@@ -1,0 +1,10 @@
+response_format:
+  type: json_schema
+  json_schema:
+    name: capability_response
+    strict: true
+    schema:
+      type: array
+      items:
+        type: string
+      uniqueItems: true

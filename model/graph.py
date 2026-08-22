@@ -19,9 +19,10 @@ token_count: TokenCount = {
     "reasoning": 0
 }
 
-INTENT_PROMPT_PATH = Path(__file__).parents[1] / "prompts" / "intent.yml"
-AGENTS_PROMPT_PATH = Path(__file__).parents[1] / "prompts" / "node.yml"
-CAPABILITIES_PROMPT_PATH = Path(__file__).parents[1] / "prompts" / "capability.yml"
+PROMPTS_PATH = Path(__file__).parents[1] / "prompts"
+INTENT_PROMPT_PATH = PROMPTS_PATH / "intent" / "prompt.yml"
+AGENTS_PROMPT_PATH = PROMPTS_PATH / "node" / "prompt.yml"
+CAPABILITIES_PROMPT_PATH = PROMPTS_PATH / "capability" / "prompt.yml"
 
 def _get_capabilities(capabilities: list, *, tools: bool = False) -> str:
     # get capabilities in str

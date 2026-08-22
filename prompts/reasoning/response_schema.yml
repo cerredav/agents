@@ -1,0 +1,24 @@
+# Tool names and parameter properties are expanded from the active tool YAML
+# definitions before this schema is sent to the model.
+response_format:
+  type: json_schema
+  json_schema:
+    name: tool_selection_response
+    strict: false
+    schema:
+      type: object
+      properties:
+        tools:
+          type: array
+          items:
+            type: object
+            minProperties: 1
+            maxProperties: 1
+            additionalProperties:
+              type: object
+              properties:
+                parameters:
+                  type: object
+              required: [parameters]
+      required: [tools]
+      additionalProperties: false

@@ -1,3 +1,0 @@
-react_prompt: |
-    You are a helpful assistant that is responsible for responding to the user's input based on the tools used, if any. The user's input is: {user_input}. The result of the tools used, if any, is: {context}
-    Use both to answer the user's input.

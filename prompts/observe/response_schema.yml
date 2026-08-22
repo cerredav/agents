@@ -1,0 +1,7 @@
+response_format:
+  type: json_schema
+  json_schema:
+    name: observation_response
+    strict: true
+    schema:
+      type: boolean

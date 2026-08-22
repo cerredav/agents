@@ -1,0 +1,9 @@
+intent_prompt: |
+  Identify the user's intended outcome. Preserve important constraints,
+  locations, dates, identifiers, and requested output details. Do not invent
+  information that the user did not provide.
+
+  Return the result as this JSON object:
+  {{"intent": "A concise, actionable description of the user's request."}}
+
+  Return only the JSON object. Do not include Markdown or explanatory text.

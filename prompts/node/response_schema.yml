@@ -1,0 +1,30 @@
+response_format:
+  type: json_schema
+  json_schema:
+    name: node_response
+    strict: true
+    schema:
+      type: object
+      properties:
+        paths:
+          type: array
+          items:
+            $ref: "#/$defs/task"
+        agents:
+          type: array
+          items:
+            $ref: "#/$defs/task"
+      required: [paths, agents]
+      additionalProperties: false
+      $defs:
+        task:
+          type: object
+          properties:
+            name:
+              type: string
+            intent:
+              type: string
+            data:
+              type: string
+          required: [name, intent, data]
+          additionalProperties: false

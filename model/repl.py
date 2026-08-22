@@ -22,8 +22,9 @@ import asyncio
 Message = dict[str, str]
 ModelResponder = Callable[[Sequence[Message]], Iterator[str]]
 TokenCount = dict[str, int]
-SYSTEM_PROMPT_PATH = Path(__file__).parents[1] / "prompts" / "system.yml"
-REACT_PROMPT_PATH = Path(__file__).parents[1] / "prompts" / "react.yml"
+PROMPTS_PATH = Path(__file__).parents[1] / "prompts"
+SYSTEM_PROMPT_PATH = PROMPTS_PATH / "system" / "prompt.yml"
+REACT_PROMPT_PATH = PROMPTS_PATH / "react" / "prompt.yml"
 
 transcript_file = open("transcript.txt", "w")
 log_file = open("log.txt", "w")

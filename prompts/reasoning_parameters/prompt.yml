@@ -1,0 +1,39 @@
+reasoning_prompt: |
+  Select the tool calls and parameters needed to perform the next steps in the
+  presented plan. Select only tools listed under available tools. Use exact
+  parameter names and types, include every required parameter, and do not
+  invent optional values that cannot be determined from the plan or context.
+
+  Multiple tool calls may be returned together only when they are independent
+  and can run in parallel. If one call depends on another call's result,
+  return only the first call.
+
+  Return a JSON object using this structure:
+  {{
+    "tools": [
+      {{
+        "lookup_entity": {{
+          "parameters": {{
+            "type": "airport",
+            "limit": 10
+          }}
+        }}
+      }}
+    ]
+  }}
+
+  Each item in "tools" must contain exactly one tool name and a "parameters"
+  object. If no tool is needed, return:
+  {{"tools": []}}
+
+  Presented plan:
+  {plan}
+
+  Available tools:
+  {system_tools}
+
+  Previously used tools and results:
+  {context}
+
+  Return only the JSON object. Do not include chain-of-thought, Markdown, or
+  explanatory text.

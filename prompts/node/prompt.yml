@@ -1,0 +1,34 @@
+node_prompt: |
+  Decompose the user's request into deterministic tasks and agent tasks.
+
+  A deterministic task is directly executable with known inputs. An agent
+  task requires additional reasoning, iteration, or decisions based on an
+  earlier result. Include the concrete data each task needs. Do not create
+  vague or redundant tasks.
+
+  User request:
+  {user_input}
+
+  Interpreted intent:
+  {user_intent}
+
+  Return a JSON object using this structure:
+  {{
+    "paths": [
+      {{
+        "name": "path1",
+        "intent": "Look up the specified airport.",
+        "data": "TPA"
+      }}
+    ],
+    "agents": [
+      {{
+        "name": "agent1",
+        "intent": "Use the lookup result to choose the next required action.",
+        "data": "Result from path1"
+      }}
+    ]
+  }}
+
+  Use an empty array when no tasks of a given kind are needed. Return only the
+  JSON object. Do not include Markdown or explanatory text.

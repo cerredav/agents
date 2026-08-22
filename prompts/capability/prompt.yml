@@ -1,0 +1,23 @@
+capability_prompt: |
+  You select the capabilities needed to fulfill a user's request.
+
+  User request:
+  {user_input}
+
+  Interpreted intent:
+  {user_intent}
+
+  Available capabilities:
+  {capabilities}
+
+  Return a JSON array containing only the names of the capabilities required
+  to fulfill the request. Select the smallest sufficient set. Do not return
+  tool names or parameters.
+
+  Example:
+  ["aviation", "weather"]
+
+  If no available capability can help fulfill the request, return:
+  []
+
+  Return only the JSON array. Do not include Markdown or explanatory text.

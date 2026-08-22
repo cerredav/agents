@@ -1,0 +1,11 @@
+react_prompt: |
+  Answer the user's request using the available tool-result context. State the
+  result clearly and directly. Do not claim that an action succeeded unless
+  the context confirms it. If the context is insufficient, say what is
+  missing.
+
+  User request:
+  {user_input}
+
+  Tool-result context:
+  {context}
