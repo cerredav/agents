@@ -1,4 +1,4 @@
-name: get_future_flights
+name: get_airport_timetable
 description: Get a live airport arrival or departure timetable
 parameters: &timetable_parameters
   iataCode:
@@ -42,7 +42,7 @@ parameters: &timetable_parameters
     description: Codeshare filter; use null to exclude codeshared flights
     required: false
 callable:
-  file: actions/aviation/future_flights.py
-  function: get_future_flights
+  file: actions/aviation/airport_timetable.py
+  function: get_airport_timetable
   description: Get a live airport arrival or departure timetable
   parameters: *timetable_parameters

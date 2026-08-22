@@ -4,7 +4,11 @@ from collections.abc import Callable
 from .connection import stream_model_response
 from utils.tokenizer import count_tokens
 from utils.write_to_file import write_to_file
-from utils.read_yml import read_yml
+from utils.print_agent_thought import (
+    make_agent_thought_callback,
+    print_agent_thought,
+)
+from utils.read_yml import read_response_format, read_yml
 from utils.parse_tools import format_tools_for_prompt
 from utils.run_tool import run_tool
 from .state import State
@@ -15,7 +19,9 @@ Message = dict[str, str]
 TokenCount = dict[str, int]
 
 transcript_file = open("transcript_loop.txt", "w")
-log_file = open("log_loop.txt", "w")
+# Graph and capability loops share this append-only handle without truncating
+# one another's diagnostic history.
+log_file = open("log_loop.txt", "a")
 token_count: TokenCount = {
     "input": 0,
     "output": 0,
@@ -30,6 +36,23 @@ LOOP_PROMPT_PATH = PROMPTS_PATH / "loop" / "prompt.yml"
 PLANNER_PROMPT_PATH = PROMPTS_PATH / "planner" / "prompt.yml"
 OBSERVE_PROMPT_PATH = PROMPTS_PATH / "observe" / "prompt.yml"
 REACT_PROMPT_PATH = PROMPTS_PATH / "react" / "prompt.yml"
+
+INTENT_RESPONSE_FORMAT = read_response_format(INTENT_PROMPT_PATH)
+PLANNER_RESPONSE_FORMAT = read_response_format(PLANNER_PROMPT_PATH)
+REASONING_RESPONSE_FORMAT = read_response_format(REASONING_PROMPT_PATH)
+OBSERVE_RESPONSE_FORMAT = read_response_format(OBSERVE_PROMPT_PATH)
+
+def _thinking_callback(title: str, *, capability: str | None = None) -> Callable[[str], None]:
+    """Print a model thought and persist the same trace in the loop log."""
+    stage = f"{title} [{capability}]" if capability else title
+    return make_agent_thought_callback(
+        title=stage,
+        on_thought=lambda thought: write_to_file(
+            log_file,
+            f"[MODEL_THOUGHT] {stage}\n{thought}",
+            end_block=True,
+        ),
+    )
 
 def _intent_message() -> Message:
     intent_prompt = read_yml(str(INTENT_PROMPT_PATH))["intent_prompt"]
@@ -64,37 +87,38 @@ def _observe_message(context: str, user_request: str) -> Message:
         "content": observe_prompt.format(context=context, user_request=user_request),
     }
 
+def _parse_observation(response: str) -> tuple[bool, str]:
+    """Parse the structured completion observation returned by the model."""
+    try:
+        observation = json.loads(response)
+    except json.JSONDecodeError as error:
+        raise ValueError(f"Observation is not valid JSON: {error}") from error
+
+    if not isinstance(observation, dict):
+        raise ValueError("Observation must be a JSON object.")
+    complete = observation.get("complete")
+    reason = observation.get("reason")
+    if not isinstance(complete, bool) or not isinstance(reason, str):
+        raise ValueError("Observation requires a boolean 'complete' and string 'reason'.")
+    return complete, reason
+
 def submit_to_loop(user_input: str, onProgress: Callable | None = None):
     """
     Accept a user input and start the loop
     """
+    log_file.seek(0)
+    log_file.truncate()
     has_completed = False
     context = ''
-    # Add the user's input to the messages
-    user_message = {
-        "role": "user",
-        "content": user_input,
-    }
-    # decipher a user's intent
-    intent_message = _intent_message()
-    intent_message_array = [
-        _intent_message(),
-        user_message
-    ]
-    log = f"""[USER_INPUT] {user_input}\n[MODEL_INSTRUCTION] {intent_message["content"]}\n"""
-    write_to_file(log_file, log)
-    chunks = []
-    for chunk in stream_model_response(tuple(intent_message_array)):
-        chunks.append(chunk)
-        print(chunk, end="", flush=True)
-
-    intent_response = "".join(chunks)
-    log = f"""[RESPONSE]{intent_response}"""
+    # Intent deciphering is temporarily bypassed so the planner receives the
+    # user's exact request. Restore the intent-model request here when a
+    # lossless structured intent representation is ready.
+    intent_response = user_input
+    log = (
+        f"[USER_INPUT] {user_input}\n"
+        f"[INTENT_BYPASS] Using raw user input as intent: {intent_response}"
+    )
     write_to_file(log_file, log, end_block=True)
-    intent_response_tokens = count_tokens(intent_response)
-    token_count["reasoning"] += intent_response_tokens
-    # callback
-    onProgress(token_count)
 
 
     # start loop until the model finishes.
@@ -115,22 +139,26 @@ def submit_to_loop(user_input: str, onProgress: Callable | None = None):
         log = f"""[MODEL_INSTRUCTION] {observe_message["content"]}\n"""
         write_to_file(log_file, log)
         # observe
-        for chunk in stream_model_response(tuple([observe_message])):
+        for chunk in stream_model_response(
+            tuple([observe_message]),
+            response_format=OBSERVE_RESPONSE_FORMAT,
+            on_thinking=_thinking_callback("Observation reasoning"),
+        ):
             loop_chunks.append(chunk)
 
+        loop_response = "".join(loop_chunks)
         log = f"""[RESPONSE] {loop_response}"""
         write_to_file(log_file, log, end_block=True)
 
         # parse the loop response
-        loop_response = "".join(loop_chunks)
+        print_agent_thought(loop_response, title="Completion observation")
         loop_response_tokens = count_tokens(loop_response)
         token_count["reasoning"] += loop_response_tokens
         # callback
         onProgress(token_count)
         try:
-            loop_response = loop_response.strip()
-            has_completed = loop_response.strip().lower() == "true"
-            print(f'[INFO] Has completed: {has_completed}')
+            has_completed, reason = _parse_observation(loop_response.strip())
+            print(f'[INFO] Has completed: {has_completed}. Reason: {reason}')
         except Exception as error:
             print(f'\n[ERROR] Error parsing loop response: {error}')
             print(f'\n[ERROR] Loop response: {loop_response}')
@@ -156,22 +184,29 @@ async def submit_to_agent(user_input: str, user_intent: str, onProgress: Callabl
         log = f"""[MODEL_INSTRUCTION] {observe_message["content"]}\n"""
         write_to_file(log_file, log)
         # observe
-        for chunk in stream_model_response(tuple([observe_message])):
+        for chunk in stream_model_response(
+            tuple([observe_message]),
+            response_format=OBSERVE_RESPONSE_FORMAT,
+            on_thinking=_thinking_callback(
+                "Observation reasoning",
+                capability=capability,
+            ),
+        ):
             loop_chunks.append(chunk)
 
+        loop_response = "".join(loop_chunks)
         log = f"""[RESPONSE] {loop_response}"""
         write_to_file(log_file, log, end_block=True)
 
         # parse the loop response
-        loop_response = "".join(loop_chunks)
+        print_agent_thought(loop_response, title="Completion observation")
         loop_response_tokens = count_tokens(loop_response)
         token_count["reasoning"] += loop_response_tokens
         # callback
         onProgress(token_count)
         try:
-            loop_response = loop_response.strip()
-            has_completed = loop_response.strip().lower() == "true"
-            print(f'[INFO] Has completed: {has_completed}')
+            has_completed, reason = _parse_observation(loop_response.strip())
+            print(f'[INFO] Has completed: {has_completed}. Reason: {reason}')
         except Exception as error:
             print(f'\n[ERROR] Error parsing loop response: {error}')
             print(f'\n[ERROR] Loop response: {loop_response}')
@@ -186,10 +221,18 @@ def think(users_intent: str, context: str, onProgress: Callable, *, capability: 
     log = f"""[MODEL_INSTRUCTION] {planner_message["content"]}\n"""
     write_to_file(log_file, log)
     chunks = []
-    for chunk in stream_model_response(tuple([planner_message])):
+    for chunk in stream_model_response(
+        tuple([planner_message]),
+        response_format=PLANNER_RESPONSE_FORMAT,
+        on_thinking=_thinking_callback(
+            "Planning reasoning",
+            capability=capability,
+        ),
+    ):
         chunks.append(chunk)
-        print(chunk, end="", flush=True)
+
     planner_response = "".join(chunks)
+    print_agent_thought(planner_response, title="Planner response")
     log = f"""[RESPONSE] {planner_response}"""
     write_to_file(log_file, log, end_block=True)
     token_count["reasoning"] += count_tokens(planner_response)
@@ -205,10 +248,18 @@ def think(users_intent: str, context: str, onProgress: Callable, *, capability: 
     log = f"""[MODEL_INSTRUCTION] {reasoning_message["content"]}\n"""
     write_to_file(log_file, log)
     chunks = []
-    for chunk in stream_model_response(tuple([reasoning_message])):
+    for chunk in stream_model_response(
+        tuple([reasoning_message]),
+        response_format=REASONING_RESPONSE_FORMAT,
+        on_thinking=_thinking_callback(
+            "Tool-choice reasoning",
+            capability=capability,
+        ),
+    ):
         chunks.append(chunk)
 
     reasoning_response = "".join(chunks)
+    print_agent_thought(reasoning_response, title="Tool selection")
     log = f"""[RESPONSE] {reasoning_response}"""
     write_to_file(log_file, log, end_block=True)
     token_count["reasoning"] += count_tokens(reasoning_response)
@@ -219,7 +270,11 @@ def think(users_intent: str, context: str, onProgress: Callable, *, capability: 
         # parse the reasoning response
         reasoning_response = json.loads(reasoning_response)
     except Exception as error:
-        print(f"\n[ERROR] {error} Reasoning response: {reasoning_response}", end="", flush=True)
+        print_agent_thought(
+            f"Response: {reasoning_response}\nError: {error}",
+            title="Reasoning Response",
+            style="red",
+        )
         reasoning_response = {}
         return None
 
@@ -237,9 +292,16 @@ def think(users_intent: str, context: str, onProgress: Callable, *, capability: 
         else:
             try:
                 result = run_tool(tool_name, tool_parameters)
+                print_agent_thought(result, title="Tool result")
                 results.append(result)
             except Exception as error:
-                print(f"\n[ERROR] Error running tool: {error}")
+                print_agent_thought(
+                    f"Tool name: {tool_name}\n"
+                    f"Tool Parameters: {tool_parameters}\n"
+                    f"Error: {error}",
+                    title="Tool Result",
+                    style="red",
+                )
 
         # add the reasoning response to the messages
         log = f"""[TOOL_USED] {tool_name}\n[TOOL_PARAMETERS] {tool_parameters}\n[RESULT] {results}"""

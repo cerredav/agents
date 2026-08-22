@@ -6,7 +6,7 @@ import requests
 ScheduleType = Literal["arrival", "departure"]
 
 
-def get_scheduled_flights(
+def get_future_flight_schedule(
     iataCode: str = None,
     type: ScheduleType = None,
     date: str = None,

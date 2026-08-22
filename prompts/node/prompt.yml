@@ -17,8 +17,8 @@ node_prompt: |
     "paths": [
       {{
         "name": "path1",
-        "intent": "Look up the specified airport.",
-        "data": "TPA"
+        "intent": "Retrieve the specified record.",
+        "data": "Record identifier from the user request"
       }}
     ],
     "agents": [

@@ -12,15 +12,19 @@ reasoning_prompt: |
   {{
     "tools": [
       {{
-        "lookup_entity": {{
+        "AVAILABLE_TOOL_NAME": {{
           "parameters": {{
-            "type": "airport",
-            "limit": 10
+            "REQUIRED_PARAMETER_NAME": "parameter value"
           }}
         }}
       }}
     ]
   }}
+
+  The uppercase names in the example are placeholders. Replace the tool name
+  with an exact name from available tools and each parameter name with an
+  exact parameter from that tool's definition. Do not return placeholder
+  names.
 
   Each item in "tools" must contain exactly one tool name and a "parameters"
   object. If no tool is needed, return:

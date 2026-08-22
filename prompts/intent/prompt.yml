@@ -1,7 +1,23 @@
 intent_prompt: |
-  Identify the user's intended outcome. Preserve important constraints,
-  locations, dates, identifiers, and requested output details. Do not invent
-  information that the user did not provide.
+  Extract the outcome the user wants. Describe the request as an actionable
+  task without deciding whether it can be completed or whether more information
+  will eventually be needed.
+
+  Preserve every constraint the user supplied, including locations, relative or
+  absolute dates, times, identifiers, quantities, filters, and requested output
+  format. Keep relative expressions such as "today" exactly as stated; another
+  stage will resolve them using runtime context. Do not invent missing details,
+  add unnecessary requirements, answer the request, or explain feasibility.
+
+  Examples:
+  User: How many events are happening in the city today?
+  Output: {{"intent": "Count the events happening in the specified city today."}}
+
+  User: Find order 4821.
+  Output: {{"intent": "Retrieve order 4821."}}
+
+  User: Is it warm outside?
+  Output: {{"intent": "Determine whether the current outdoor temperature at the user's location is warm."}}
 
   Return the result as this JSON object:
   {{"intent": "A concise, actionable description of the user's request."}}

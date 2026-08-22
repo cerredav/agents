@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from collections.abc import Iterator, Sequence
+from collections.abc import Callable, Iterator, Sequence
 from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError, URLError
@@ -45,14 +45,20 @@ def load_config(config_path: str | Path = CONFIG_PATH) -> dict[str, Any]:
 def stream_model_response(
     messages: Sequence[Message],
     *,
+    response_format: dict[str, Any] | None = None,
+    on_thinking: Callable[[str], None] | None = None,
     config_path: str | Path = CONFIG_PATH,
     timeout: float = 120,
 ) -> Iterator[str]:
     """POST a chat request and yield response text as the model streams it.
 
     The configured ``location`` is treated as an OpenAI-compatible API base
-    URL. The server is expected to return Server-Sent Events (SSE), with each
-    event containing a chat-completion chunk.
+    URL. When supplied, ``response_format`` constrains the generated content
+    with the given OpenAI-compatible Structured Outputs schema. The server is
+    expected to return Server-Sent Events (SSE), with each event containing a
+    chat-completion chunk. Thinking-capable models may stream their reasoning
+    separately; it is accumulated and delivered to ``on_thinking`` once the
+    trace is complete, while only final content is yielded.
     """
     config = load_config(config_path)
     base_url = str(config.pop("location")).rstrip("/")
@@ -69,10 +75,14 @@ def stream_model_response(
         "stop",
         "n",
         "logprobs",
+        "reasoning_effort",
+        "reasoning",
     }
     payload = {key: value for key, value in config.items() if key in allowed_fields}
     payload["messages"] = list(messages)
     payload["stream"] = True
+    if response_format is not None:
+        payload["response_format"] = response_format
 
     request = Request(
         endpoint,
@@ -83,6 +93,15 @@ def stream_model_response(
         },
         method="POST",
     )
+
+    thinking_chunks: list[str] = []
+    thinking_delivered = False
+
+    def deliver_thinking() -> None:
+        nonlocal thinking_delivered
+        if on_thinking is not None and thinking_chunks and not thinking_delivered:
+            on_thinking("".join(thinking_chunks))
+            thinking_delivered = True
 
     try:
         with urlopen(request, timeout=timeout) as response:
@@ -96,18 +115,29 @@ def stream_model_response(
 
                 data = line.removeprefix("data:").strip()
                 if data == "[DONE]":
+                    deliver_thinking()
                     return
 
                 try:
                     chunk = json.loads(data)
-                    text = chunk["choices"][0]["delta"].get("content")
+                    delta = chunk["choices"][0]["delta"]
+                    thinking = (
+                        delta.get("reasoning")
+                        or delta.get("thinking")
+                        or delta.get("reasoning_content")
+                    )
+                    text = delta.get("content")
                 except (json.JSONDecodeError, KeyError, IndexError, TypeError) as error:
                     raise ModelConnectionError(
                         f"Model server returned an invalid stream event: {data}"
                     ) from error
 
+                if thinking:
+                    thinking_chunks.append(thinking)
                 if text:
                     yield text
+
+            deliver_thinking()
     except HTTPError as error:
         try:
             details = error.read().decode("utf-8", errors="replace")

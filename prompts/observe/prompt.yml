@@ -9,5 +9,9 @@ observe_prompt: |
   Tool-result context:
   {context}
 
-  Return true only when no additional tool call is needed. Otherwise, return
-  false. Return only true or false, with no Markdown or explanatory text.
+  Set "complete" to true only when no additional tool call is needed. Otherwise,
+  set it to false. In "reason", briefly identify the evidence that makes the
+  request answerable or the specific information or operation still missing.
+
+  Return only this JSON object, with no Markdown or explanatory text:
+  {{"complete": false, "reason": "The specific missing information or operation."}}

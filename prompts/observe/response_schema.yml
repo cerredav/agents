@@ -4,4 +4,11 @@ response_format:
     name: observation_response
     strict: true
     schema:
-      type: boolean
+      type: object
+      properties:
+        complete:
+          type: boolean
+        reason:
+          type: string
+      required: [complete, reason]
+      additionalProperties: false

@@ -15,7 +15,10 @@ capability_prompt: |
   tool names or parameters.
 
   Example:
-  ["aviation", "weather"]
+  ["capability_name"]
+
+  "capability_name" is a placeholder. Replace it with an exact name from the
+  available capabilities.
 
   If no available capability can help fulfill the request, return:
   []

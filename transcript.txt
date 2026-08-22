@@ -6,7 +6,3 @@
     "role": "user",
     "content": "how many flights are leaving out of tampa today?"
 }
-{
-    "role": "assistant",
-    "content": "Here are some departing flights from Tampa International Airport (TPA) on August 22, 2026:\n\n1. **Air Canada Rouge - Flight RV1661**  \n   - Departure Time: 9:10 PM\n   - Arrival City: Toronto Pearson International Airport (YYZ)\n   - Gate: E72\n   - Terminal: None\n\n2. **Frontier Airlines - Flight F92745**  \n   - Departure Time: 9:02 PM\n   - Arrival City: Denver International Airport (DEN)\n   - Gate: E71\n   - Terminal: None\n\n3. **Frontier Airlines - Flight F92216**  \n   - Departure Time: 9:50 PM\n   - Arrival City: Luis Mu\u00f1oz Mar\u00edn International Airport (SJU)\n   - Gate: E74\n   - Terminal: None\n\n4. **JetBlue Airways - Flight B6751**  \n   - Departure Time: 10:00 PM\n   - Arrival City: Luis Mu\u00f1oz Mar\u00edn International Airport (SJU)\n   - Gate: A14\n   - Terminal: None\n\n5. **Frontier Airlines - Flight F92836**  \n   - Departure Time: 10:37 PM\n   - Arrival City: Philadelphia International Airport (PHL)\n   - Gate: E71\n   - Terminal: None\n\nThese flights are scheduled to depart from Tampa International Airport on the specified date. Please note that these times and details might be subject to change, so it's always a good idea to check with the airport or your airline for updates."
-}

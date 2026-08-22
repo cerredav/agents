@@ -14,7 +14,7 @@ ScheduleStatus = Literal[
 ]
 
 
-def get_future_flights(
+def get_airport_timetable(
     iataCode: str,
     type: ScheduleType,
     status: ScheduleStatus = None,

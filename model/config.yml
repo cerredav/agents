@@ -1,7 +1,8 @@
 # This file contains the configurations for connecting to the model
 
 location: http://localhost:11434/v1
-model: qwen2.5:14b
+model: qwen3:1.7b
+reasoning_effort: medium
 temperature: 0.5
 max_tokens: 1000
 top_p: 1
