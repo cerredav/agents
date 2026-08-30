@@ -1,5 +1,5 @@
 name: get_flights
-description: Get real-time or historical flights with optional pagination and filters
+description: Get real-time flights with optional pagination and filters
 parameters: &flight_parameters
   limit:
     type: int
@@ -14,6 +14,7 @@ parameters: &flight_parameters
     description: Flight status to return
     required: false
   flight_date:
+    enabled: false
     type: str
     description: Flight date in YYYY-MM-DD format
     required: false

@@ -32,10 +32,14 @@ def parse_tools(tools_directory: str | Path = TOOLS_DIRECTORY, capability: str |
         if os.path.isdir(directory / capability):
             tools = parse_tools(directory / capability)
         else:
-            tools.append(_parse_tool(directory / f"{capability}.yml"))
+            tool = _parse_tool(directory / f"{capability}.yml")
+            if tool:
+                tools.append(tool)
     else:
         for tool_path in sorted(directory.rglob("*.yml")):
-            tools.append(_parse_tool(tool_path))
+            tool = _parse_tool(tool_path)
+            if tool:
+                tools.append(tool)
 
     if not tools:
         raise ToolParseError(
@@ -60,6 +64,9 @@ def _parse_tool(tool_path: Path) -> dict[str, Any]:
     if not isinstance(definition, dict):
         raise ToolParseError(f"{tool_path} must contain a YAML mapping")
 
+    if definition.get("enabled", True) is not True:
+        return {}
+
     for field in ("name", "description"):
         if not isinstance(definition.get(field), str) or not definition[field].strip():
             raise ToolParseError(f"{tool_path} requires a non-empty '{field}' field")
@@ -76,7 +83,8 @@ def _parse_tool(tool_path: Path) -> dict[str, Any]:
             raise ToolParseError(
                 f"{tool_path} contains an invalid parameter definition"
             )
-        normalized_parameters[parameter_name] = specification
+        if specification.get("enabled", True) is True:
+            normalized_parameters[parameter_name] = specification
 
     return {
         "name": definition["name"].strip(),
@@ -91,7 +99,9 @@ def format_tools_for_prompt(
     capability: str | None = None
 ) -> str:
     """Return tool definitions as readable JSON for ``reasoning.yml``."""
-    return json.dumps(parse_tools(tools_directory, capability), indent=2, ensure_ascii=False)
+    return json.dumps(
+        parse_tools(tools_directory, capability), indent=2, ensure_ascii=False
+    )
 
 
 def main() -> None:

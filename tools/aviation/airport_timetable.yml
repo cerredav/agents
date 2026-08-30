@@ -1,4 +1,5 @@
 name: get_airport_timetable
+enabled: false
 description: Get a live airport arrival or departure timetable
 parameters: &timetable_parameters
   iataCode:
@@ -39,7 +40,7 @@ parameters: &timetable_parameters
     required: false
   codeshared:
     type: str
-    description: Codeshare filter; use null to exclude codeshared flights
+    description: Codeshare filter; omit this optional parameter when no codeshare filter is needed
     required: false
 callable:
   file: actions/aviation/airport_timetable.py

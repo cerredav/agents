@@ -1,8 +1,11 @@
 planner_prompt: |
-  Produce the next actionable plan for fulfilling the user's intent. Account
+  Produce the next actionable plan for fulfilling the user's intent and their input. Account
   for work already completed in the tool-result context. Include only steps
   that remain necessary, and do not assume that a tool returned information
   that is absent from the context.
+
+  User input:
+  {user_input}
 
   User intent:
   {user_intent}
@@ -10,11 +13,10 @@ planner_prompt: |
   Tool-result context:
   {context}
 
-  Return a JSON object containing an ordered list of concise steps:
-  {{"steps": ["First remaining step", "Second remaining step"]}}
-
-  If the task is already complete, return:
-  {{"steps": []}}
+  Return a JSON object that conforms to the supplied response schema. The
+  "steps" property must contain an ordered array of concise remaining actions.
+  Do not copy wording from this instruction into the steps. If the task is
+  already complete, return an empty "steps" array.
 
   Return only the JSON object. Do not include chain-of-thought, Markdown, or
   explanatory text.

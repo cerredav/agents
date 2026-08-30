@@ -1,17 +1,17 @@
-# This tool is used to get the latitude and longitude for a given location name
+# Resolve a named location to coordinates and airport metadata when available
 name: named_location_to_lat_lon_pair
-description: Get the latitude and longitude for a given location name
+description: Resolve a location name to latitude, longitude, and an IATA airport code when available
 parameters:
   location:
     type: str
-    description: The location name to get the latitude and longitude for
+    description: Location or airport name to resolve
     required: true
 callable: 
   file: actions/geocode.py
   function: get_geocode
-  description: Get the latitude and longitude for a given location name
+  description: Resolve a location name to latitude, longitude, and an IATA airport code when available
   parameters:
     location:
       type: str
-      description: The location name to get the latitude and longitude for
+      description: Location or airport name to resolve
       required: true

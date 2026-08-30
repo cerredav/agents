@@ -1,6 +1,9 @@
 import json
 from pathlib import Path
 from collections.abc import Callable
+from typing import Any
+from context.date import get_current_datetime_context
+from context.injection import collect_context
 from utils.read_yml import read_response_format, read_yml
 
 from utils.tokenizer import count_tokens
@@ -73,20 +76,54 @@ def _capabilities_message(user_intent: str, user_input: str, capabilities: str) 
             ),
     }
 
-async def submit_to_graph(user_input: str, onProgress: Callable | None = None):
+async def submit_to_graph(
+    user_input: str,
+    onProgress: Callable | None = None,
+    *,
+    runtime_context: dict[str, Any] | None = None,
+):
     """
     Accept a user input and start the graph
     """
     context = ''
+    runtime_context = runtime_context or collect_context(get_current_datetime_context)
     log_file.seek(0)
     log_file.truncate()
 
     state = State(user_input = user_input)
     state.define_capabilities()
 
-    # Intent deciphering is temporarily bypassed so downstream agents retain
-    # every detail in the user's original wording. Restore the intent-model
-    # request here when a lossless structured intent representation is ready.
+    # Intent deciphering is temporarily disabled.
+    user_message = {
+        "role": "user",
+        "content": user_input,
+    }
+    intent_message = _intent_message()
+    intent_message_array = [
+        intent_message,
+        user_message,
+    ]
+    log = (
+        f'[USER_INPUT] {user_input}\n'
+        f'[MODEL_INSTRUCTION] {intent_message["content"]}\n'
+    )
+    write_to_file(log_file, log)
+    chunks = []
+    for chunk in stream_model_response(
+        tuple(intent_message_array),
+        response_format=INTENT_RESPONSE_FORMAT,
+        on_thinking=_thinking_callback("Intent reasoning"),
+    ):
+        chunks.append(chunk)
+    intent_response = "".join(chunks)
+    print_agent_thought(intent_response, title="Interpreted intent")
+    log = f"[RESPONSE]{intent_response}"
+    write_to_file(log_file, log, end_block=True)
+    intent_response_tokens = count_tokens(intent_response)
+    token_count["reasoning"] += intent_response_tokens
+    onProgress(token_count)
+
+    # Use the original request until intent deciphering is re-enabled.
     intent_response = user_input
     log = (
         f"[USER_INPUT] {user_input}\n"
@@ -128,7 +165,8 @@ async def submit_to_graph(user_input: str, onProgress: Callable | None = None):
             user_input=user_input,
             user_intent=intent_response,
             onProgress=onProgress,
-            capability=capability
+            capability=capability,
+            runtime_context=runtime_context,
         ) for capability in capabilities
     ]
     result = await asyncio.gather(*agents)

@@ -3,6 +3,11 @@ reasoning_prompt: |
   plan. Select only tools listed under available tools, and supply parameters
   using the exact names and types in their definitions.
 
+  Keep tool-selection reasoning brief. Compare the relevant tools once, choose
+  the earliest executable call in the plan, and produce the final JSON without
+  repeatedly reconsidering the same alternatives. Reserve enough output budget
+  to return the required JSON object.
+
   Multiple tool calls may be returned together only when they are independent
   and can run in parallel. If one call depends on another call's result,
   return only the first call; the dependent call can be selected in a later
@@ -37,6 +42,14 @@ reasoning_prompt: |
   "parameters" object, using an empty object when the selected tool takes no
   parameters. If no tool is needed, return:
   {{"tools": []}}
+
+  Never emit null as a parameter value. Omit an optional parameter when its
+  value is unknown or unnecessary. If a required value is unknown, select the
+  prerequisite tool that can obtain it; do not call the dependent tool until
+  the required value is available.
+
+  User's input:
+  {user_input}
 
   Presented plan:
   {plan}

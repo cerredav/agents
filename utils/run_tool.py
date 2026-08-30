@@ -35,6 +35,10 @@ def run_tool(
 
     directory = Path(tools_directory).resolve()
     definition, definition_path = _find_tool(tool_name.strip(), directory)
+    if definition.get("enabled", True) is not True:
+        raise ToolExecutionError(
+            f"Tool '{tool_name}' is disabled in {definition_path}."
+        )
     callable_config = definition.get("callable")
 
     if not isinstance(callable_config, dict):
@@ -139,10 +143,30 @@ def _validate_declared_parameters(
             f"Tool '{tool_name}' has an invalid parameters schema."
         )
 
+    null_parameters = sorted(name for name, value in parameters.items() if value is None)
+    if null_parameters:
+        raise ToolExecutionError(
+            f"Null parameter value(s) for tool '{tool_name}': "
+            f"{', '.join(null_parameters)}. Omit unknown optional parameters; "
+            "required parameters must have concrete values."
+        )
+
     unknown = sorted(set(parameters) - set(schema))
     if unknown:
         raise ToolExecutionError(
             f"Unknown parameter(s) for tool '{tool_name}': {', '.join(unknown)}"
+        )
+
+    disabled = sorted(
+        name
+        for name, parameter_schema in schema.items()
+        if name in parameters
+        and isinstance(parameter_schema, dict)
+        and parameter_schema.get("enabled", True) is not True
+    )
+    if disabled:
+        raise ToolExecutionError(
+            f"Disabled parameter(s) for tool '{tool_name}': {', '.join(disabled)}"
         )
 
     missing = sorted(

@@ -28,16 +28,19 @@ def get_current_datetime_context(
         current = current.astimezone(resolved_timezone)
 
     timezone_name = getattr(current.tzinfo, "key", None) or current.tzname()
-    resolved_location = location or os.getenv("AGENT_LOCATION")
+    resolved_location = location or os.getenv("AGENT_LOCATION", None)
 
-    return {
+    context = {
         "current_date": current.date().isoformat(),
         "current_time": current.timetz().isoformat(timespec="seconds"),
         "current_datetime": current.isoformat(timespec="seconds"),
         "timezone": timezone_name,
         "utc_offset": current.strftime("%z"),
-        "location": resolved_location,
     }
+
+    if resolved_location: context['location'] = resolved_location
+
+    return context
 
 
 def _resolve_timezone(timezone: str | tzinfo | None) -> tzinfo:

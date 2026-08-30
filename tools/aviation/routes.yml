@@ -1,4 +1,5 @@
 name: get_routes
+enabled: false
 description: Get airline route metadata with optional pagination and filters
 parameters: &route_parameters
   limit:

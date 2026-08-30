@@ -1,4 +1,5 @@
 name: get_future_flight_schedule
+enabled: false
 description: Get airport arrivals or departures scheduled for a future date
 parameters: &future_schedule_parameters
   iataCode:

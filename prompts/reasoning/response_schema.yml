@@ -19,6 +19,9 @@ response_format:
               properties:
                 parameters:
                   type: object
+                  additionalProperties:
+                    not:
+                      type: 'null'
               required: [parameters]
       required: [tools]
       additionalProperties: false
