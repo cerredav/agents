@@ -1,0 +1,36 @@
+name: always_validate
+description: Validate factual assumptions before using them to reason, act, or call tools.
+priority: required
+
+instruction: |
+  Validate every factual assumption and intermediate value needed to complete
+  the user's request. Do not treat the model's memory or world knowledge as a
+  verified source for facts that can be obtained from an available tool.
+
+  A value is considered validated only when it is:
+    - explicitly supplied by the user;
+    - present in a previous tool result; or
+    - obtained from an appropriate available tool during the current task.
+
+  Before selecting or calling a tool, inspect each required parameter and its
+  provenance. Never invent, estimate, or recall a required factual parameter
+  when another available tool can resolve it. If one tool depends on the output
+  of another, call the prerequisite tool first and wait for its result before
+  calling the dependent tool.
+
+  If no available tool can validate a necessary value, ask the user for it or
+  clearly state the limitation. Do not silently substitute an unverified value.
+
+  Validation is an internal quality check. Do not reveal private chain-of-thought;
+  return only the response format requested by the active prompt.
+
+examples:
+  - scenario: The user asks for the weather in a named location.
+    required_behavior: |
+      Do not supply latitude and longitude from memory. First use the location
+      resolution tool with the user's location. Then use the exact coordinates
+      returned by that tool when calling the weather tool.
+  - scenario: A tool requires an identifier that is not in the user request or prior results.
+    required_behavior: |
+      Use an available lookup tool to obtain the identifier before calling the
+      dependent tool. If no lookup tool exists, ask the user for the identifier.

@@ -1,0 +1,40 @@
+name: open_location_in_google_maps
+description: Open a validated named location and its coordinates in Google Maps.
+parameters:
+  name:
+    type: str
+    description: Validated display name of the location, such as Tampa, FL
+    required: true
+  latitude:
+    type: float
+    description: Validated latitude between -90 and 90
+    required: true
+  longitude:
+    type: float
+    description: Validated longitude between -180 and 180
+    required: true
+  map_span_m:
+    type: int
+    description: Optional map viewport span in meters; defaults to 54407
+    required: false
+callable:
+  file: actions/location_to_map.py
+  function: open_location_in_google_maps
+  description: Build a Google Maps place URL and open it in the default browser
+  parameters:
+    name:
+      type: str
+      description: Validated display name of the location
+      required: true
+    latitude:
+      type: float
+      description: Validated latitude between -90 and 90
+      required: true
+    longitude:
+      type: float
+      description: Validated longitude between -180 and 180
+      required: true
+    map_span_m:
+      type: int
+      description: Optional map viewport span in meters
+      required: false

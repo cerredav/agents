@@ -2,8 +2,8 @@ import json
 from pathlib import Path
 from collections.abc import Callable
 from typing import Any
-from context.date import get_current_datetime_context
-from context.injection import collect_context
+from utils.context.date import get_current_datetime_context
+from utils.context.injection import collect_context, inject_rules
 from utils.read_yml import read_response_format, read_yml
 
 from utils.tokenizer import count_tokens
@@ -62,18 +62,20 @@ def _intent_message() -> Message:
     intent_prompt = read_yml(str(INTENT_PROMPT_PATH))["intent_prompt"]
     return {
         "role": "system",
-        "content": intent_prompt.format(),
+        "content": inject_rules(intent_prompt.format()),
     }
 
 def _capabilities_message(user_intent: str, user_input: str, capabilities: str) -> Message:
     agents_prompt = read_yml(str(CAPABILITIES_PROMPT_PATH))["capability_prompt"]
     return {
         "role": "system",
-        "content": agents_prompt.format(
-            user_intent=user_intent, 
-            user_input=user_input,
-            capabilities=_get_capabilities(capabilities)
-            ),
+        "content": inject_rules(
+            agents_prompt.format(
+                user_intent=user_intent,
+                user_input=user_input,
+                capabilities=_get_capabilities(capabilities),
+            )
+        ),
     }
 
 async def submit_to_graph(
@@ -91,7 +93,6 @@ async def submit_to_graph(
     log_file.truncate()
 
     state = State(user_input = user_input)
-    state.define_capabilities()
 
     # Intent deciphering is temporarily disabled.
     user_message = {

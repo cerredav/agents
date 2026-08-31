@@ -83,7 +83,7 @@ parameters: &flight_parameters
     description: Scheduled departure date in YYYY-MM-DD format
     required: false
 callable:
-  file: actions/aviation/flights.py
+  file: actions/flights.py
   function: get_flights
   description: Get real-time or historical flights with optional pagination and filters
   parameters: *flight_parameters

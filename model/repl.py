@@ -11,6 +11,7 @@ from .connection import stream_model_response
 from utils.read_yml import read_yml
 from utils.write_to_file import write_to_file
 from utils.tokenizer import count_tokens
+from utils.context.injection import inject_rules
 
 from .react import submit_to_loop 
 from .graph import submit_to_graph
@@ -47,7 +48,7 @@ class AgentShell:
         # add list_tools tool to the system prompt
         return {
             "role": "system",
-            "content": system_prompt,
+            "content": inject_rules(system_prompt),
         }
 
     @staticmethod
@@ -55,7 +56,9 @@ class AgentShell:
         react_prompt = read_yml(str(REACT_PROMPT_PATH))["react_prompt"]
         return {
             "role": "system",
-            "content": react_prompt.format(user_input=user_input, context=context),
+            "content": inject_rules(
+                react_prompt.format(user_input=user_input, context=context)
+            ),
         }
 
     async def run(self) -> None:
@@ -101,7 +104,7 @@ class AgentShell:
                 current_token_count['reasoning'] += token_count['reasoning']
 
             # submit to react
-            context = await submit_to_graph(user_input, onProgress=onProgress)
+            context = await submit_to_loop(user_input, onProgress=onProgress)
 
             # Asking the model to react to the user's input based on the tool result
             log = f"""[MODEL_INSTRUCTION] {self._react_message(user_input=user_input, context=context)["content"]}\n"""

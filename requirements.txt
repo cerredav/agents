@@ -15,6 +15,7 @@ markdown-it-py==4.2.0
 mdurl==0.1.2
 numpy==2.5.1
 packaging==26.2
+pypdf>=5.0.0,<7.0.0
 Pygments==2.20.0
 PyYAML==6.0.3
 regex==2026.7.19

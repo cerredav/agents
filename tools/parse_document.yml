@@ -1,0 +1,12 @@
+name: parse_pdf_document
+description: Extract all available text from a local PDF document.
+parameters: &pdf_parameters
+  file_path:
+    type: str
+    description: Path to the PDF file to parse
+    required: true
+callable:
+  file: actions/parse_document.py
+  function: extract_pdf_text
+  description: Extract text from every page of a local PDF file
+  parameters: *pdf_parameters

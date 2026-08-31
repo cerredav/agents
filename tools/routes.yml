@@ -47,7 +47,7 @@ parameters: &route_parameters
     description: Flight ICAO code-number
     required: false
 callable:
-  file: actions/aviation/routes.py
+  file: actions/routes.py
   function: get_routes
   description: Get airline route metadata with optional pagination and filters
   parameters: *route_parameters

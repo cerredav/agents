@@ -1,9 +1,10 @@
 from pathlib import Path
 from collections.abc import Callable
 from typing import Any
+from typing_extensions import runtime
 
-from context.date import get_current_datetime_context
-from context.injection import collect_context, inject_context
+from utils.context.date import get_current_datetime_context
+from utils.context.injection import collect_context, inject_rules
 from .connection import stream_model_response
 from utils.tokenizer import count_tokens
 from utils.write_to_file import write_to_file
@@ -20,6 +21,8 @@ import json
 
 Message = dict[str, str]
 TokenCount = dict[str, int]
+
+state = State()
 
 transcript_file = open("transcript_loop.txt", "w")
 # Graph and capability loops share this append-only handle without truncating
@@ -60,7 +63,7 @@ def _intent_message() -> Message:
     intent_prompt = read_yml(str(INTENT_PROMPT_PATH))["intent_prompt"]
     return {
         "role": "system",
-        "content": intent_prompt,
+        "content": inject_rules(intent_prompt),
     }
 
 def _planner_message(
@@ -80,7 +83,7 @@ def _planner_message(
 
     if capability:
         planner_str = f"You are a planning {capability} agent. " + planner_str
-    planner_str = inject_context(planner_str, runtime_context or {})
+    planner_str = inject_rules(planner_str, runtime_context)
     return {
         "role": "system",
         "content": planner_str,
@@ -88,7 +91,7 @@ def _planner_message(
 
 def _reasoning_message(
     user_input: str,
-    plan: str,
+    # plan: str,
     context: str,
     *,
     capability: str | None = None,
@@ -98,13 +101,13 @@ def _reasoning_message(
     system_tools = format_tools_for_prompt(capability=capability)
     content = reasoning_prompt.format(
         user_input=user_input,
-        plan=plan,
+        # plan=plan,
         system_tools=system_tools,
         context=context,
     )
     return {
         "role": "system",
-        "content": inject_context(content, runtime_context or {}),
+        "content": inject_rules(content, runtime_context),
     }
 
 def _observe_message(
@@ -117,7 +120,7 @@ def _observe_message(
     content = observe_prompt.format(context=context, user_request=user_request)
     return {
         "role": "system",
-        "content": inject_context(content, runtime_context or {}),
+        "content": inject_rules(content, runtime_context),
     }
 
 def _parse_observation(response: str) -> tuple[bool, str]:
@@ -135,7 +138,7 @@ def _parse_observation(response: str) -> tuple[bool, str]:
         raise ValueError("Observation requires a boolean 'complete' and string 'reason'.")
     return complete, reason
 
-def submit_to_loop(user_input: str, onProgress: Callable | None = None):
+async def submit_to_loop(user_input: str, onProgress: Callable | None = None):
     """
     Accept a user input and start the loop
     """
@@ -144,35 +147,39 @@ def submit_to_loop(user_input: str, onProgress: Callable | None = None):
     has_completed = False
     context = ''
     runtime_context = collect_context(get_current_datetime_context)
-    # Intent deciphering is temporarily disabled.
-    # user_message = {
-    #     "role": "user",
-    #     "content": user_input,
-    # }
-    # intent_message = _intent_message()
-    # intent_message_array = [
-    #     intent_message,
-    #     user_message,
-    # ]
-    # log = (
-    #     f'[USER_INPUT] {user_input}\n'
-    #     f'[MODEL_INSTRUCTION] {intent_message["content"]}\n'
-    # )
-    # write_to_file(log_file, log)
-    # chunks = []
-    # for chunk in stream_model_response(
-    #     tuple(intent_message_array),
-    #     response_format=INTENT_RESPONSE_FORMAT,
-    #     on_thinking=_thinking_callback("Intent reasoning"),
-    # ):
-    #     chunks.append(chunk)
-    # intent_response = "".join(chunks)
-    # print_agent_thought(intent_response, title="Interpreted intent")
-    # log = f"[RESPONSE]{intent_response}"
-    # write_to_file(log_file, log, end_block=True)
-    # intent_response_tokens = count_tokens(intent_response)
-    # token_count["reasoning"] += intent_response_tokens
-    # onProgress(token_count)
+
+    state.user_input = user_input
+    state.runtime_context=runtime_context
+
+    user_message = {
+        "role": "user",
+        "content": user_input,
+    }
+    intent_message = _intent_message()
+    intent_message_array = [
+        intent_message,
+        user_message,
+    ]
+    log = (
+        f'[USER_INPUT] {user_input}\n'
+        f'[MODEL_INSTRUCTION] {intent_message["content"]}\n'
+    )
+    write_to_file(log_file, log)
+    chunks = []
+    for chunk in stream_model_response(
+        tuple(intent_message_array),
+        response_format=INTENT_RESPONSE_FORMAT,
+        on_thinking=_thinking_callback("Intent reasoning"),
+    ):
+        chunks.append(chunk)
+    intent_response = "".join(chunks)
+    state.intent = intent_response
+    print_agent_thought(intent_response, title="Interpreted intent")
+    log = f"[RESPONSE]{intent_response}"
+    write_to_file(log_file, log, end_block=True)
+    intent_response_tokens = count_tokens(intent_response)
+    token_count["reasoning"] += intent_response_tokens
+    onProgress(token_count)
 
     # Use the original request until intent deciphering is re-enabled.
     intent_response = user_input
@@ -188,7 +195,8 @@ def submit_to_loop(user_input: str, onProgress: Callable | None = None):
     while not has_completed:
         # think and act
         result = think(
-            intent_response,
+            user_input=user_input,
+            users_intent=intent_response,
             context=context,
             onProgress=onProgress,
             runtime_context=runtime_context,
@@ -315,38 +323,38 @@ def think(
     runtime_context: dict[str, Any] | None = None,
 ) -> tuple[str, str, str, str]:
     # plan the next best course of action
-    planner_message = _planner_message(
-        user_input=user_input,
-        user_intent=users_intent,
-        context=context,
-        capability=capability,
-        runtime_context=runtime_context,
-    )
-    log = f"""[MODEL_INSTRUCTION] {planner_message["content"]}\n"""
-    write_to_file(log_file, log)
-    chunks = []
-    for chunk in stream_model_response(
-        tuple([planner_message]),
-        response_format=PLANNER_RESPONSE_FORMAT,
-        on_thinking=_thinking_callback(
-            "Planning reasoning",
-            capability=capability,
-        ),
-    ):
-        chunks.append(chunk)
+    # planner_message = _planner_message(
+    #     user_input=user_input,
+    #     user_intent=users_intent,
+    #     context=context,
+    #     capability=capability,
+    #     runtime_context=runtime_context,
+    # )
+    # log = f"""[MODEL_INSTRUCTION] {planner_message["content"]}\n"""
+    # write_to_file(log_file, log)
+    # chunks = []
+    # for chunk in stream_model_response(
+    #     tuple([planner_message]),
+    #     response_format=PLANNER_RESPONSE_FORMAT,
+    #     on_thinking=_thinking_callback(
+    #         "Planning reasoning",
+    #         capability=capability,
+    #     ),
+    # ):
+    #     chunks.append(chunk)
 
-    planner_response = "".join(chunks)
-    print_agent_thought(planner_response, title="Planner response")
-    log = f"""[RESPONSE] {planner_response}"""
-    write_to_file(log_file, log, end_block=True)
-    token_count["reasoning"] += count_tokens(planner_response)
-    # callback
-    onProgress(token_count)
+    # planner_response = "".join(chunks)
+    # print_agent_thought(planner_response, title="Planner response")
+    # log = f"""[RESPONSE] {planner_response}"""
+    # write_to_file(log_file, log, end_block=True)
+    # token_count["reasoning"] += count_tokens(planner_response)
+    # # callback
+    # onProgress(token_count)
 
     # get the best tool to use
     reasoning_message = _reasoning_message(
         user_input=user_input,
-        plan=planner_response, 
+        # plan=planner_response, 
         context=context, 
         capability=capability,
         runtime_context=runtime_context,
@@ -385,6 +393,11 @@ def think(
 
     # use the tool
     tools = reasoning_response.get("tools", [])
+    # update tool list
+    if state.last_tools:
+        state.last_tools = state.current_tools
+        state.current_tools = tools
+
     results = []
     for tool in tools:
         tool_name = next(iter(tool))

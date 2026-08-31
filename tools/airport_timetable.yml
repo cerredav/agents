@@ -43,7 +43,7 @@ parameters: &timetable_parameters
     description: Codeshare filter; omit this optional parameter when no codeshare filter is needed
     required: false
 callable:
-  file: actions/aviation/airport_timetable.py
+  file: actions/airport_timetable.py
   function: get_airport_timetable
   description: Get a live airport arrival or departure timetable
   parameters: *timetable_parameters

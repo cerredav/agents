@@ -3,11 +3,11 @@ name: get_current_weather
 description: Get the current weather for a given pair of latitude and longitude
 parameters:
   latitude:
-    type: int
+    type: float
     description: The latitude of the location to get the weather for
     required: true
   longitude:
-    type: int
+    type: float
     description: The longitude of the location to get the weather for
     required: true
 callable: 
@@ -16,11 +16,10 @@ callable:
   description: Get the weather for a given location
   parameters:
     latitude:
-      type: int
+      type: float
       description: The latitude of the location to get the weather for
       required: true
     longitude:
-      type: int
+      type: float
       description: The longitude of the location to get the weather for
       required: true
-  

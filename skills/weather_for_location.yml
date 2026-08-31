@@ -1,0 +1,84 @@
+name: weather_for_location
+description: Resolve an unknown location to coordinates and retrieve its current weather.
+
+intent:
+  action: get_current_weather
+  location_input:
+    - named_location
+    - airport_iata_code
+    - coordinate_pair
+
+activation:
+  use_when: |
+    The user asks for weather at a location and validated latitude and longitude
+    are not already available in the user input or tool-result context.
+  skip_when: |
+    Validated latitude and longitude are already available. In that case, call
+    get_current_weather directly; this resolution workflow is unnecessary.
+
+inputs:
+  location:
+    type: str
+    description: A place name or three-letter airport IATA code to resolve
+    required: false
+  latitude:
+    type: float
+    description: Validated latitude supplied by the user or a previous tool result
+    required: false
+  longitude:
+    type: float
+    description: Validated longitude supplied by the user or a previous tool result
+    required: false
+
+tools:
+  resolve_location: named_location_to_lat_lon_pair
+  get_weather: get_current_weather
+
+workflow:
+  - id: check_coordinates
+    action: branch
+    condition: Both latitude and longitude are already validated and available.
+    if_true: get_weather
+    if_false: resolve_location
+
+  - id: resolve_location
+    action: call_tool
+    tool: named_location_to_lat_lon_pair
+    parameters:
+      location: "{{ location }}"
+    output:
+      latitude: "{{ tool_result.latitude }}"
+      longitude: "{{ tool_result.longitude }}"
+    next: get_weather
+
+  - id: get_weather
+    action: call_tool
+    tool: get_current_weather
+    parameters:
+      latitude: "{{ latitude }}"
+      longitude: "{{ longitude }}"
+    next: complete
+
+  - id: complete
+    action: return
+    value: "{{ tool_result }}"
+
+constraints:
+  - Never infer coordinates or expand an IATA code from model memory.
+  - Treat a three-letter IATA code such as SJU as the location input to the geocode tool.
+  - Use latitude and longitude from the geocoded location itself for weather queries.
+  - Do not substitute airport_latitude or airport_longitude unless the user explicitly asks for weather at the airport.
+  - Do not call geocode when validated location coordinates are already available.
+  - Call get_current_weather only after both coordinates have been validated.
+
+examples:
+  - user_input: What's the weather like in SJU?
+    steps:
+      - Call named_location_to_lat_lon_pair with location set to SJU.
+      - Read latitude and longitude from the geocode result.
+      - Call get_current_weather with those coordinates.
+
+  - user_input: What's the weather at 18.4394, -66.0018?
+    steps:
+      - Skip this skill's resolution workflow because coordinates are already supplied.
+      - Call get_current_weather directly with latitude 18.4394 and longitude -66.0018.

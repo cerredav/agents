@@ -2,7 +2,7 @@ from pathlib import Path
 from utils.read_yml import read_yml
 from utils.define_capabilities import define_capabilities
 
-aviation_path = Path(__file__).parents[1] / "tools" / "aviation"
+aviation_path = Path(__file__).parents[1] / "tools"
 FLIGHTS_TOOL_PATH = aviation_path / "flights.yml"
 AIRPORT_TIMETABLE_TOOL_PATH = aviation_path / "airport_timetable.yml"
 LOOKUP_ENTITY_TOOL_PATH = aviation_path / "lookup_entity.yml"

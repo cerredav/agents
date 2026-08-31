@@ -43,7 +43,7 @@ parameters: &future_schedule_parameters
     description: Numeric flight number
     required: false
 callable:
-  file: actions/aviation/future_flight_schedule.py
+  file: actions/future_flight_schedule.py
   function: get_future_flight_schedule
   description: Get airport arrivals or departures scheduled for a future date
   parameters: *future_schedule_parameters

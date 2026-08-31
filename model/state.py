@@ -1,19 +1,19 @@
 from dataclasses import dataclass
-from typing import List, Callable
+from typing import List, Callable, Any
 
 @dataclass
 class Tool:
     name: str
-    parameters: dict
-    validator: Callable
+    description: str
 
 # state of the graph
 @dataclass
 class State:
-    user_input: str
+    user_input: str = None
     intent: str = None
-    tools: List[Tool] = None
-    capabilies = None
+    current_tools: List[Tool] = None
+    last_tools: List[Tool] = None
+    runtime_context: dict[str, Any] = None
 
     # use singleton pattern
     _instance = None

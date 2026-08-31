@@ -1,12 +1,11 @@
 reasoning_prompt: |
-  Select the tool calls needed to perform the next steps in the presented
-  plan. Select only tools listed under available tools, and supply parameters
+  Select the tools need to ensure we meet the user's request. 
+  Select only tools listed under available tools, and supply parameters
   using the exact names and types in their definitions.
 
-  Keep tool-selection reasoning brief. Compare the relevant tools once, choose
-  the earliest executable call in the plan, and produce the final JSON without
-  repeatedly reconsidering the same alternatives. Reserve enough output budget
-  to return the required JSON object.
+  Keep tool-selection reasoning brief. Compare the relevant tools once and 
+  produce the final JSON without repeatedly reconsidering the same 
+  alternatives. Reserve enough output budget to return the required JSON object.
 
   Multiple tool calls may be returned together only when they are independent
   and can run in parallel. If one call depends on another call's result,
@@ -50,9 +49,6 @@ reasoning_prompt: |
 
   User's input:
   {user_input}
-
-  Presented plan:
-  {plan}
 
   Available tools:
   {system_tools}
